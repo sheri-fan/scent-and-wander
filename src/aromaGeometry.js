@@ -14,7 +14,72 @@ export function buildAromaPlant(species,{green,petals,centres,add,ball,stem,rand
  function cluster(x,y,z,r=.2,number=18){for(let j=0;j<number;j++){const a=j*2.4,d=r*Math.sqrt(j/number);radial(x+Math.cos(a)*d,y+.06*Math.cos(d/r*Math.PI*.5),z+Math.sin(a)*d,.037,4);}}
  function tube(x,y,z,length,radius,dir=[0,1,0]){const points=[];for(let j=0;j<=8;j++){const t=j/8;points.push(new THREE.Vector2(.014+radius*t*t,length*t));}const g=new THREE.LatheGeometry(points,12);g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...dir).normalize()));g.translate(x,y,z);petals.push(g);}
  function leaves(x,z,h,n=4){for(let j=0;j<n;j++){const a=j*2.4;petal(green,x,h*(.18+j*.12),z,tree?.25:.19,.055,a,.035,-.045);}}
+ if(kind==='woodPieces'){
+  // Bark-free, split heartwood billets, rather than another intact tree trunk.
+  const section=new THREE.Shape();
+  section.moveTo(-.075,-.055);section.lineTo(.07,-.06);section.lineTo(.095,.015);
+  section.lineTo(.035,.08);section.lineTo(-.07,.065);section.closePath();
+  for(const [x,y,z,length,angle] of [[-.06,.085,-.14,.88,.12],[.05,.095,.12,.73,-.17],[-.02,.235,-.015,.79,.3]]){
+   const rotation=[0,Math.PI/2+angle,0],position=[x,y,z];
+   const body=new THREE.ExtrudeGeometry(section,{depth:length,bevelEnabled:true,bevelSegments:2,steps:1,bevelSize:.008,bevelThickness:.012});
+   body.translate(0,0,-length/2);add(green,body,position,[1,1,1],rotation);
+   for(const side of [-1,1]){
+    const cap=new THREE.ShapeGeometry(section);cap.translate(0,0,side*(length/2+.013));
+    add(petals,cap,position,[1,1,1],rotation);
+    for(let ring=1;ring<4;ring++){
+     const g=new THREE.TorusGeometry(ring*.019,.0013,3,28);g.scale(1,.65,1);g.translate(0,0,side*(length/2+.014));
+     add(centres,g,position,[1,1,1],rotation);
+    }
+   }
+   for(let j=0;j<7;j++){
+    const cx=-.062+j*.02,points=[];
+    for(let k=0;k<7;k++){
+     const gx=cx+.002*Math.sin(k*1.1+j);
+     const surface=gx<=.035?.065+(gx+.07)/.105*.015:.08-(gx-.035)/.06*.065;
+     points.push(new THREE.Vector3(gx,surface+.002,k/6*(length-.035)-(length-.035)/2));
+    }
+    add(centres,new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points),16,.0016,3,false),position,[1,1,1],rotation);
+   }
+  }
+  return;
+ }
+ if(kind==='woodLog'){
+  const y=.19,length=1.12,radius=.17;
+  add(green,new THREE.CylinderGeometry(radius*.94,radius,length,24),[0,y,0],[1,1,1],[0,0,-Math.PI/2]);
+  for(const side of [-1,1]){
+   const x=side*(length/2+.002);
+   add(petals,new THREE.CylinderGeometry(radius*.94,radius*.94,.006,32),[x,y,0],[1,1,1],[0,0,-Math.PI/2]);
+   for(let ring=1;ring<=6;ring++)add(centres,new THREE.TorusGeometry(radius*ring/7,.002,3,40),[x+side*.005,y,0],[1,1,.93],[0,Math.PI/2,0]);
+   for(const a of [.8,3.7])segment(centres,[x+side*.009,y+Math.cos(a)*.075,Math.sin(a)*.075],[x+side*.009,y+Math.cos(a)*.15,Math.sin(a)*.15],.0025);
+  }
+  for(let i=0;i<16;i++){
+   const a=i*Math.PI/8,cy=y+Math.cos(a)*radius*.99,z=Math.sin(a)*radius*.99;
+   segment(centres,[-.5,cy,z],[-.07,cy+.003,z],.003);
+   segment(centres,[.02,cy+.003,z],[.48,cy,z],.003);
+  }
+  return;
+ }
  if(tree)segment(green,[0,0,0],[0,1.25,0],.04);
+ if(kind==='coniferTree'){
+  for(let level=0;level<7;level++){
+   const y=.3+level*.17,reach=.54*(1-level/8);
+   for(let j=0;j<6;j++){
+    const a=j*Math.PI/3+level*.65,tip=[Math.cos(a)*reach,y-.06,Math.sin(a)*reach];
+    segment(green,[0,y,0],tip,.009);
+    for(let k=1;k<=5;k++){
+     const t=k/5,x=tip[0]*t,z=tip[2]*t;
+     for(const side of [-1,1]){
+      const angle=a+side*.65;
+      petal(green,x,y-.06*t,z,.12*(1-t*.4),species.name==='Taiwania'?.012:.035,angle,.025,-.025);
+      if(species.name==='Cedar')petal(green,x,y-.06*t,z,.08,.008,angle+.45,.035,-.01);
+     }
+    }
+   }
+  }
+  ball(petals,[0,1.38,0],[.025,.07,.025]);
+  for(let i=0;i<3;i++){const a=i*2.1;ball(centres,[Math.cos(a)*.29,.73,Math.sin(a)*.29],[.025,.045,.025]);}
+  return;
+ }
  if(kind==='valleyBells'){
   for(let i=0;i<flowerCount;i++){
    const a=i*2.4,r=.3*Math.sqrt(i/flowerCount),x=Math.cos(a)*r,z=Math.sin(a)*r,h=.46+rand()*.13;
@@ -38,7 +103,23 @@ export function buildAromaPlant(species,{green,petals,centres,add,ball,stem,rand
  stem(x,z,h);ball(green,[x,.11,z],[.34,.014,.32]);radial(x,h,z,.28,9,3,.1);ball(centres,[x,h+.08,z],[.065,.045,.065]);continue;
  }
  leaves(x,z,h,kind==='lily'||kind==='sideTrumpets'?6:4);
- if(kind==='salvia'){
+ if(['teaTree','citrusFruitTree','foliageTree','tonkaTree'].includes(kind)){
+  for(let j=0;j<10;j++){
+   const theta=j*2.4,cx=x+Math.cos(theta)*.13,cz=z+Math.sin(theta)*.13;
+   petal(green,cx,h+(j%3)*.035,cz,kind==='teaTree'?.18:.23,.06,theta,.06,-.025);
+  }
+  if(kind==='citrusFruitTree'){
+   ball(petals,[x,h+.035,z],species.name==='Lemon'?[.07,.11,.07]:[.09,.09,.09]);
+   for(let j=0;j<3;j++)ball(centres,[x+.15+Math.cos(j*2.1)*.025,h-.025,z+Math.sin(j*2.1)*.025],[.023,.014,.023]);
+  }else if(kind==='tonkaTree'){
+   radial(x,h+.03,z,.055,5,1,.025);
+   ball(centres,[x+.09,h-.13,z],[.035,.08,.025]);
+  }else if(kind==='teaTree'){
+   radial(x,h+.05,z,.085,5,1,.03);ball(centres,[x,h+.075,z],[.03,.025,.03]);
+  }else{
+   cluster(x,h+.035,z,.065,4);ball(centres,[x,h+.055,z],[.015,.015,.015]);
+  }
+ }else if(kind==='salvia'){
   for(let j=0;j<10;j++){
    const y=h+j*.037,taper=1-j*.055;
    if(j<9)segment(green,[x,y,z],[x,y+.037,z],.005);

@@ -4,7 +4,92 @@
 const perfume = (plants, brand, name, concentration, evidence, url, en, zh) =>
  ({ plants, brand, name, concentration, evidence, url, en, zh });
 
+// P.Seven botanical references are note associations linked to representative exhibits.
+// Exhibit links distinguish clary sage, sweet orange and plum from similar existing plants.
+// No botanical species or physical extraction is inferred from a fragrance note.
+export const PSEVEN_BRAND = {
+ name:'P.Seven', origin:'Taiwan', website:'https://www.panseven.com/',
+};
+export const PSEVEN_BOTANICAL_REFERENCES = {
+ 'Tea Plant':{name:'Tea Plant',chinese:'茶樹',exhibit:'Tea Plant'},
+ 'Taiwanese Hinoki Cypress':{name:'Taiwanese Hinoki Cypress',chinese:'台灣檜木',exhibit:'Taiwanese Hinoki Cypress'},
+ Osmanthus:{name:'Osmanthus',chinese:'桂花',exhibit:'Osmanthus'},
+ Lemon:{name:'Lemon',chinese:'檸檬',exhibit:'Lemon'},
+ 'Sweet Orange':{name:'Sweet Orange',chinese:'甜橙',exhibit:'Sweet Orange'},
+ 'Clary Sage':{name:'Clary Sage',chinese:'快樂鼠尾草',exhibit:'Clary Sage'},
+ 'Lily of the Valley':{name:'Lily of the Valley',chinese:'鈴蘭',exhibit:'Lily of the Valley'},
+ Cedar:{name:'Cedar',chinese:'雪松',exhibit:'Cedar'},
+ Sandalwood:{name:'Sandalwood',chinese:'檀香',exhibit:'Sandalwood'},
+ Patchouli:{name:'Patchouli',chinese:'廣藿香',exhibit:'Patchouli'},
+ Taiwania:{name:'Taiwania',chinese:'台灣杉',exhibit:'Taiwania'},
+ 'Ho Wood':{name:'Ho Wood',chinese:'芳樟木',exhibit:'Ho Wood'},
+ Plum:{name:'Plum',chinese:'梅',exhibit:'Plum'},
+ Spikenard:{name:'Spikenard',chinese:'穗甘松',exhibit:'Spikenard'},
+ 'Tonka Bean':{name:'Tonka Bean',chinese:'零陵香豆',exhibit:'Tonka Bean'},
+};
+const pseven = {
+ brand:PSEVEN_BRAND.name,brandOrigin:PSEVEN_BRAND.origin,brandWebsite:PSEVEN_BRAND.website,
+ // The brand pages say perfume; no EDP/EDT concentration was verified.
+ concentration:'Perfume',concentrationVerified:false,evidence:'note',
+ physicalIngredientsVerified:false,
+};
+
 export const PERFUME_ADDITIONS = [
+ {
+  ...pseven,name:'茗香水 (Taiwanese Tea Perfume)',plants:['Tea Plant','Taiwanese Hinoki Cypress','Spikenard','Patchouli','Tonka Bean'],
+  url:'https://www.panseven.com/products/taiwan-teaperfume',
+  verificationStatus:'published-notes-verified',
+  en:'The official notes feature Jin Xuan tea, Taiwanese hinoki and patchouli. These are fragrance notes, not a verified ingredient formula.',
+  zh:'官方香調包含金萱茶、台灣檜木與廣藿香；香調描述並非經核實的實際成分配方。',
+  notes:{
+   en:{top:['Fir/cedar notes','Frankincense','Taiwanese hinoki cypress'],middle:['Jin Xuan tea'],base:['Spikenard','Musk','Patchouli','Tonka bean']},
+   zh:{top:['杉','乳香','台灣檜木'],middle:['金萱茶'],base:['穗甘松','麝香','廣藿香','零陵香豆']},
+  },
+  botanicalReferences:['Taiwanese Hinoki Cypress','Tea Plant','Spikenard','Patchouli','Tonka Bean'],
+  noteCaveats:{en:'The top note 杉 is retained as the supplied fir/cedar wording; its botanical identity is unresolved and is not equated with Golden Tea’s cedar note.',zh:'前調「杉」保留使用者提供的杉木類描述；植物身分尚未核實，不直接視為金桂的「雪松」。'},
+ },
+ {
+  ...pseven,name:'金桂 (Golden Tea)',plants:['Lemon','Sweet Orange','Clary Sage','Osmanthus','Lily of the Valley','Tea Plant','Cedar','Sandalwood','Patchouli'],
+  url:'https://www.panseven.com/products/golden-teaperfume',
+  verificationStatus:'published-notes-verified',
+  en:'The official notes pair osmanthus and lily of the valley with oolong tea, above a woody base including patchouli. They do not establish natural extracts.',
+  zh:'官方香調以桂花、鈴蘭搭配烏龍茶，後調包含廣藿香等木質氣息；這並不代表已確認使用天然萃取物。',
+  notes:{
+   en:{top:['Lemon','Sweet orange','Clary sage'],middle:['Osmanthus','Lily of the valley','Oolong tea'],base:['Cedar','Sandalwood','Guaiac wood','Patchouli','Oakmoss','Musk']},
+   zh:{top:['檸檬','甜橙','快樂鼠尾草'],middle:['桂花','山谷百合（鈴蘭）','烏龍茶'],base:['雪松','檀香','癒創木','廣藿香','橡木苔','麝香']},
+  },
+  botanicalReferences:['Lemon','Sweet Orange','Clary Sage','Osmanthus','Lily of the Valley','Tea Plant','Cedar','Sandalwood','Patchouli'],
+ },
+ {
+  ...pseven,name:'暗香 (Aged Tea)',plants:['Tea Plant','Plum','Taiwania','Ho Wood'],
+  url:'https://www.panseven.com/products/aged-tea',
+  verificationStatus:'published-notes-verified',
+  en:'The official notes move through green, oolong and black tea, smoked plum, Taiwania and ho wood. The miniature exhibits illustrate these notes, without confirming physical ingredients.',
+  zh:'官方香調包含綠茶、烏龍茶、紅茶、烏梅、台灣杉與芳樟木；迷你展品用於認識這些香調，並不證實實際成分。',
+  notes:{
+   en:{top:['Green tea','Oolong tea','Green grass'],middle:['Black tea','Smoked plum'],base:['Taiwania','Ho wood']},
+   zh:{top:['綠茶','烏龍茶','青草'],middle:['紅茶','烏梅'],base:['台灣杉','芳樟木']},
+  },
+  botanicalReferences:['Tea Plant','Plum','Taiwania','Ho Wood'],
+ },
+ // Catalog entries only: full note verification remains pending as requested.
+ // Empty lists prevent guessed notes from appearing on unrelated plant cards.
+ ...[
+  ['Oolong Tea 沁香','https://www.panseven.com/products/oolong-tea'],
+  ['Formosa Beau-Tea 玉香','https://www.panseven.com/products/formosa-beau-tea'],
+  ['Ruby Black Tea 耀香','https://www.panseven.com/products/ruby-black-tea'],
+  ['Honyun Black Tea 韻香','https://www.panseven.com/products/honyun-black-tea'],
+  ['Vintage Black Tea 璞香','https://www.panseven.com/products/vintage-black-tea'],
+  ['[mor] Thé 墨茶','https://www.panseven.com/products/mor-th%C3%A9'],
+  ['[mor] Flor 墨花','https://www.panseven.com/products/mor-flor'],
+  ['[mor] Bambu 墨竹','https://www.panseven.com/products/mor-bambu'],
+ ].map(([name,url])=>({
+  ...pseven,name,url,plants:[],botanicalReferences:[],
+  verificationStatus:'pending-full-note-verification',
+  notes:{en:{top:[],middle:[],base:[]},zh:{top:[],middle:[],base:[]}},
+  en:'Full fragrance-note verification pending. No botanical links have been inferred from the name.',
+  zh:'完整香調資料待核實；未從香水名稱推斷植物關聯。',
+ })),
  perfume(['Jasmine','Orange Blossom'], 'L’Artisan Parfumeur', 'La Chasse aux Papillons', 'Eau de Toilette', 'note',
   'https://www.artisanparfumeur.com/us/en_US/p/la-chasse-aux-papillons-eau-de-toilette-100-ml--000000000065173187',
   'Official floral notes include jasmine and orange blossom.', '官方花香介紹包含茉莉與橙花。'),

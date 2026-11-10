@@ -65,7 +65,7 @@ Plant layout tests verify each variety is represented twice, remains within the 
 
 ## Languages
 
-Traditional Chinese (`zh-Hant`) is the default. Use the language selector in the upper-right corner of the welcome screen, paused view, or plant discovery view to switch between **繁體中文** and **English**. Press Escape during exploration to access it. The interface, all 18 plant descriptions, and perfume ingredient cards are translated; original-source reading links retain their original language and are labeled accordingly. The browser remembers the language selection when local storage is available. Switching languages keeps the current walk and discoveries intact; discoveries themselves remain session-only.
+English is the default for first-time visitors. Use the language selector in the upper-right corner of the welcome screen, paused view, or plant discovery view to switch between **繁體中文** and **English**. Press Escape during exploration to access it. The interface, all 18 plant descriptions, and perfume ingredient cards are translated; original-source reading links retain their original language and are labeled accordingly. The browser remembers the language selection when local storage is available. Switching languages keeps the current walk and discoveries intact; discoveries themselves remain session-only.
 
 Translations live in `src/i18n.js`. Stable English plant identifiers keep discovery tracking independent of the display language.
 
@@ -124,7 +124,7 @@ Tests verify coverage of all 50 article entries, unique discovery identities, co
 
 ## Compact random woodland layout
 
-The current discovery layout uses seeded random scattering within a **38-metre radius** around the central woodland. It contains two patches of each of the 67 varieties, plus 24 additional moss beds, 18 mushroom groups, and 12 ferns: **188 interactive patches** in total. Placement uses the visible patch footprint and a minimum 1.6-metre edge gap, clears solid scenery, and keeps the path open. Most flowers are placed away from the path. The seed makes the organic arrangement stable across interface updates and reloads.
+The current discovery layout uses seeded random scattering within a **38-metre radius** around the central woodland. It contains two patches of each of the 79 varieties, plus 24 additional moss beds, 18 mushroom groups, and 12 ferns: **212 interactive patches** in total. Placement uses the visible patch footprint and a minimum 1.6-metre edge gap, clears solid scenery, and keeps the path open. Most flowers are placed away from the path. The seed makes the organic arrangement stable across interface updates and reloads.
 
 Moss tends towards tree bases and mushrooms towards fallen timber when a clear, spaced location is available. The same array drives rendering and targeting, so every moss and mushroom group, including the smaller ambient instances, opens its discovery card. Hit targets follow each patch's actual scale and ground-level height. Ambient patches retain their quieter appearance without additional glow sprites.
 
@@ -162,7 +162,7 @@ The speaker icon near the lower-right corner opens a volume slider and mute butt
 
 ## Language choices
 
-The selector supports Traditional Chinese (`zh-Hant`), Simplified Chinese (`zh-Hans`) and English. Traditional Chinese remains the default. Simplified Chinese presentation text is derived locally with OpenCC (`src/chinese.js`), including all botanical cards, flower meanings, interface labels, music controls and discovery counts. Original source URLs, plant discovery IDs, perfume names, music attribution and the requested missing-meaning placeholder are preserved. The selected language persists in local storage.
+The selector supports Traditional Chinese (`zh-Hant`), Simplified Chinese (`zh-Hans`) and English. English is the default for first-time visitors; returning visitors keep their saved language choice. Simplified Chinese presentation text is derived locally with OpenCC (`src/chinese.js`), including all botanical cards, flower meanings, interface labels, music controls and discovery counts. Original source URLs, plant discovery IDs, perfume names, music attribution and the requested missing-meaning placeholder are preserved. The selected language persists in local storage.
 
 English typography uses the classic Swei Spring Light face for headings and Swei Spring Medium for body text and controls. Both are supplied locally in `fonts/`; Chinese retains the original Swei Spring Regular and Sugar Regular styles.
 
@@ -186,3 +186,28 @@ Only the four font faces referenced by the interface are tracked; unused font va
 ### Optimized web fonts
 
 The deployed CSS uses local WOFF2 files (about 6.3 MB combined instead of 79 MB of TTF downloads). Swei Spring Regular retains its full glyph set; the English Light/Medium faces include Latin characters, and Sugar includes the current interface and botanical text in both Chinese scripts. New characters can fall back to the full Regular face. Original TTF files remain in the repository. The font's upstream SIL Open Font License is included in `public/FONT-LICENSE.txt` (source: https://github.com/max32002/swei-spring).
+
+
+## P.Seven botanical exhibits
+
+Twelve missing P.Seven botanical references are now planted as miniature, clickable exhibits: tea plant, Taiwanese hinoki cypress, lemon, sweet orange, clary sage, cedar, sandalwood, Taiwania, ho wood, plum, spikenard and tonka bean. There are 79 discoveries and 212 interactive patches. The original 188 patch positions remain unchanged; the 24 new patches are appended within the same 38-metre garden radius with the existing 1.6-metre spacing rule.
+
+Cards include botanical knowledge in all three languages and the supported P.Seven perfume links. Models represent plants, not verified physical ingredients in the perfumes. The eight pending perfume records remain unlinked until their notes are verified. This update is local only.
+
+## Woodland benches
+
+Six weathered wooden benches are scattered deterministically around the exploration area, facing the trail. Placement clears the path, plants, trees, rocks and fallen logs, and keeps benches at least nine metres apart. The slatted seats and backs use one shared instanced model with a local procedural wood texture. Bench collision prevents walking through the seats. Existing plant placement is unchanged. These are scenery benches; there is no sitting interaction. Local update only.
+
+## Warm woodland cottage
+
+A small timber cottage sits in a deterministic clearing at the edge of the exploration area, with a pitched green roof, warm glowing windows, porch steps, a wall lantern and a freestanding wooden mailbox with a red flag. Placement clears existing plants, benches and solid scenery, keeping their positions intact. The cottage is near world coordinates (17.65, 55.39), facing the main trail. This update is local only.
+
+Aim at the door and press **E** or click to open it, then walk inside. Walls, the door, sofa and experiment table have walking collision. The interior includes a cushioned sofa, rug and warm pendant light.
+
+- Aim at the experiment table and press **E** or click to create a virtual perfume: choose three scent notes, adjust their proportions, name the blend and save it. Up to 12 blends are stored; saved blends can be loaded or deleted. The latest blend colors the bottle on the table. This is a virtual scent composition, not a physical perfume formulation.
+- Aim at the blackboard and press **E** or click to write a message or draw with four chalk colors. An eraser, undo and clear controls are available. Save to display the message and drawing on the cottage wall.
+- Choose **Back to the cottage** to resume walking, or press Escape to close the panel and pause. Workshop controls support English, Traditional Chinese and Simplified Chinese.
+
+Blends and the blackboard are saved in this browser's local storage and survive refreshes. They are private to the browser, not shared between visitors or devices. Clearing browser storage removes them.
+
+Click the bottle label in the perfume workshop to customize its title, small inscription, paper colour, text colour and lettering style. An empty label title follows the scent name. Use **Save my scent** to save the design with the blend; **Use this blend** restores its label for further editing. The saved design also appears on the table's bottle. Older blends receive the original cream label automatically.

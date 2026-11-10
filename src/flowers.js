@@ -50,11 +50,13 @@ export function makeFlowerPatches(world) {
  }
  throw new Error('No spaced planting position for '+FLOWERS[type].name);
  }
- const types=FLOWERS.flatMap((_,type)=>[type,type]);
+ // Append the P.Seven discoveries after the established layout is placed.
+ const types=FLOWERS.flatMap((plant,type)=>plant.batch==='pseven'?[]:[type,type]);
  for(let i=types.length-1;i>0;i--){const j=Math.floor(rand()*(i+1));[types[i],types[j]]=[types[j],types[i]];}
  types.forEach(type=>place(type));
  for(const [kind,count] of [['moss',24],['mushroom',18],['fern',12]]){
  const type=FLOWERS.findIndex(p=>p.kind===kind);for(let i=0;i<count;i++)place(type,true);
  }
+ FLOWERS.forEach((plant,type)=>{if(plant.batch==='pseven'){place(type);place(type);}});
  return patches;
 }
