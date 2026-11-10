@@ -14,3 +14,8 @@ fonts/*
 !fonts/SweiSpringSugarCJKtc-Regular.ttf
 !fonts/*LICENSE*
 !fonts/*OFL*
+
+!fonts/SweiSpringCJKtc-Regular.woff2
+!fonts/SweiSpringCJKtc-Light.woff2
+!fonts/SweiSpringCJKtc-Medium.woff2
+!fonts/SweiSpringSugarCJKtc-Regular.woff2

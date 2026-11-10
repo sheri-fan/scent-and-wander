@@ -182,3 +182,7 @@ VITE_BASE_PATH=/scent-and-wander/ npm run preview
 ```
 
 Only the four font faces referenced by the interface are tracked; unused font variants remain in the local `fonts/` folder.
+
+### Optimized web fonts
+
+The deployed CSS uses local WOFF2 files (about 6.3 MB combined instead of 79 MB of TTF downloads). Swei Spring Regular retains its full glyph set; the English Light/Medium faces include Latin characters, and Sugar includes the current interface and botanical text in both Chinese scripts. New characters can fall back to the full Regular face. Original TTF files remain in the repository. The font's upstream SIL Open Font License is included in `public/FONT-LICENSE.txt` (source: https://github.com/max32002/swei-spring).
