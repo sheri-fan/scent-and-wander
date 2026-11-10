@@ -65,7 +65,7 @@ Plant layout tests verify each variety is represented twice, remains within the 
 
 ## Languages
 
-English is the default for first-time visitors. Use the language selector in the upper-right corner of the welcome screen, paused view, or plant discovery view to switch between **繁體中文** and **English**. Press Escape during exploration to access it. The interface, all 18 plant descriptions, and perfume ingredient cards are translated; original-source reading links retain their original language and are labeled accordingly. The browser remembers the language selection when local storage is available. Switching languages keeps the current walk and discoveries intact; discoveries themselves remain session-only.
+Every page load starts in English. Use the language selector in the upper-right corner of the welcome screen, paused view, or plant discovery view to switch between **繁體中文** and **English**. Press Escape during exploration to access it. The interface, all 18 plant descriptions, and perfume ingredient cards are translated; original-source reading links retain their original language and are labeled accordingly. Language changes apply during the current visit; refreshing starts in English. Switching languages keeps the current walk and discoveries intact; discoveries themselves remain session-only.
 
 Translations live in `src/i18n.js`. Stable English plant identifiers keep discovery tracking independent of the display language.
 
@@ -162,7 +162,7 @@ The speaker icon near the lower-right corner opens a volume slider and mute butt
 
 ## Language choices
 
-The selector supports Traditional Chinese (`zh-Hant`), Simplified Chinese (`zh-Hans`) and English. English is the default for first-time visitors; returning visitors keep their saved language choice. Simplified Chinese presentation text is derived locally with OpenCC (`src/chinese.js`), including all botanical cards, flower meanings, interface labels, music controls and discovery counts. Original source URLs, plant discovery IDs, perfume names, music attribution and the requested missing-meaning placeholder are preserved. The selected language persists in local storage.
+The selector supports Traditional Chinese (`zh-Hant`), Simplified Chinese (`zh-Hans`) and English. English is the default on every page load, including returning visits with an older saved language choice. Simplified Chinese presentation text is derived locally with OpenCC (`src/chinese.js`), including all botanical cards, flower meanings, interface labels, music controls and discovery counts. Original source URLs, plant discovery IDs, perfume names, music attribution and the requested missing-meaning placeholder are preserved. The selected language applies until the next page load.
 
 English typography uses the classic Swei Spring Light face for headings and Swei Spring Medium for body text and controls. Both are supplied locally in `fonts/`; Chinese retains the original Swei Spring Regular and Sugar Regular styles.
 

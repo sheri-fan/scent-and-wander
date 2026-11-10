@@ -21,7 +21,7 @@ class RenderBoundary extends Component {
 }
 function App(){
  const [language,setLanguage]=useState(initialLanguage),t=MESSAGES[language],et=chineseText(EXAMPLE_MESSAGES[language==='en'?'en':'zh-Hant'],language);
- useEffect(()=>{document.documentElement.lang=language;document.title=chineseText(language!=='en'?'循香漫遊｜虛擬香水博物館':'Scent & Wander: A place to wander',language);try{localStorage.setItem('whispering-forest-language',language);}catch{}},[language]);
+ useEffect(()=>{document.documentElement.lang=language;document.title=chineseText(language!=='en'?'循香漫遊｜虛擬香水博物館':'Scent & Wander: A place to wander',language);},[language]);
  const world=useMemo(makeWorld,[]),[locked,setLocked]=useState(false),[entered,setEntered]=useState(false),[ready,setReady]=useState(false),[quality,setQuality]=useState('high'),[error,setError]=useState(''),[aim,setAim]=useState(null),[selected,setSelected]=useState(null),[discovered,setDiscovered]=useState([]);
  const [activity,setActivity]=useState(null),[cottageAim,setCottageAim]=useState(null),[board,setBoard]=useState(loadBoard),[lastBlend,setLastBlend]=useState(()=>loadBlends()[0]||null);
  const cottageLabels=chineseText(language==='en'?{door:'Open / close the cottage door',lab:'Create your own perfume',board:'Leave a message or draw',use:'E or click'}:{door:'開啟／關上小屋的門',lab:'調配你的香氣',board:'留言或畫畫',use:'E 或點擊'},language);

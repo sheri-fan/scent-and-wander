@@ -12,7 +12,7 @@ export const MESSAGES = {
  }
 };
 MESSAGES['zh-Hans']=simplified(MESSAGES['zh-Hant']);
-export function initialLanguage(){try{const saved=localStorage.getItem('whispering-forest-language');return LANGUAGES.includes(saved)?saved:'en';}catch{return 'en';}}
+export function initialLanguage(){return 'en';}
 const TRADITIONAL_PLANTS = {
  'Lavender':{name:'薰衣草',note:'纖細的紫色花穗，聚成一小片柔軟的雲。沿著它們的微光，漫步在森林邊緣。'},
  'Rose Bush':{name:'玫瑰花',note:'玫瑰色花瓣層層交疊，在樹蔭下，綻放成一座發著微光的小花園。'},

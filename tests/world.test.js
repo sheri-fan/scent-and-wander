@@ -107,11 +107,11 @@ test('Simplified Chinese covers every plant while preserving source links and di
  assert.equal(localizePlant(FLOWERS.find(p=>p.name==='Lily of the Valley'),'zh-Hans').name,'\u94c3\u5170');
 });
 
-test('first visits default to English and returning visits preserve language preferences',async()=>{
+test('every visit starts in English even with a previously saved Chinese preference',async()=>{
  const {initialLanguage}=await import('../src/i18n.js');
  const previous=Object.getOwnPropertyDescriptor(globalThis,'localStorage');
  try{
-  for(const [saved,expected] of [[null,'en'],['unsupported','en'],['en','en'],['zh-Hant','zh-Hant'],['zh-Hans','zh-Hans']]){
+  for(const [saved,expected] of [[null,'en'],['unsupported','en'],['en','en'],['zh-Hant','en'],['zh-Hans','en']]){
    Object.defineProperty(globalThis,'localStorage',{configurable:true,value:{getItem:()=>saved}});
    assert.equal(initialLanguage(),expected);
   }
