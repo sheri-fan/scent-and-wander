@@ -1,0 +1,40 @@
+import React, { useMemo, useState, useEffect, useCallback, useRef, Component } from 'react';
+import { createRoot } from 'react-dom/client';
+import { Canvas } from '@react-three/fiber';
+import { AdaptiveDpr, PerformanceMonitor } from '@react-three/drei';
+import * as THREE from 'three';
+import Forest from './Forest';
+import FlowerMeaning from './FlowerMeaning.jsx';
+import MusicControl from './MusicControl.jsx';
+import TitleVines from './TitleVines.jsx';
+import {chineseText} from './chinese.js';
+import { makeWorld, groundHeight, pathX } from './world';
+import { FLOWERS } from './flowers.js';
+import { MESSAGES, initialLanguage, localizePlant } from './i18n.js';
+import { EXAMPLE_MESSAGES } from './perfumeExamples.js';
+import './style.css';
+class RenderBoundary extends Component {
+ state={failed:false};static getDerivedStateFromError(){return {failed:true};}
+ render(){const t=MESSAGES[this.props.language];return this.state.failed?<div className="render-error"><h2>{t.failed}</h2><p>{t.webgl}</p></div>:this.props.children;}
+}
+function App(){
+ const [language,setLanguage]=useState(initialLanguage),t=MESSAGES[language],et=chineseText(EXAMPLE_MESSAGES[language==='en'?'en':'zh-Hant'],language);
+ useEffect(()=>{document.documentElement.lang=language;document.title=chineseText(language!=='en'?'循香漫遊｜虛擬香水博物館':'Scent & Wander: A place to wander',language);try{localStorage.setItem('whispering-forest-language',language);}catch{}},[language]);
+ const world=useMemo(makeWorld,[]),[locked,setLocked]=useState(false),[entered,setEntered]=useState(false),[ready,setReady]=useState(false),[quality,setQuality]=useState('high'),[error,setError]=useState(''),[aim,setAim]=useState(null),[selected,setSelected]=useState(null),[discovered,setDiscovered]=useState([]);
+ const discover=useCallback(flower=>{setSelected(flower);setDiscovered(previous=>previous.includes(flower.name)?previous:[...previous,flower.name]);},[]);
+ useEffect(()=>{const fail=()=>setError('Mouse capture was blocked. Please try again in the browser window.');document.addEventListener('pointerlockerror',fail);return()=>document.removeEventListener('pointerlockerror',fail);},[]);
+ const cardReading=useRef(null);
+ useEffect(()=>{if(selected&&cardReading.current){cardReading.current.scrollTop=0;cardReading.current.focus({preventScroll:true});}},[selected]);
+ const plant=localizePlant(selected,language),aimedPlant=localizePlant(aim,language);
+ return <main>
+ <RenderBoundary language={language}><Canvas shadows dpr={[1,1.5]} camera={{position:[pathX(24),groundHeight(pathX(24),24)+1.7,24],fov:65,near:.08,far:180}} gl={{antialias:true,powerPreference:'high-performance',toneMapping:THREE.ACESFilmicToneMapping,toneMappingExposure:1.05}} onCreated={()=>setReady(true)}><PerformanceMonitor onDecline={()=>setQuality('balanced')}><AdaptiveDpr pixelated/><Forest world={world} locked={locked} quality={quality} onAim={setAim} onDiscover={discover} onLock={()=>{setLocked(true);setSelected(null);setEntered(true);setError('');}} onUnlock={()=>setLocked(false)}/></PerformanceMonitor></Canvas></RenderBoundary>
+ <div className={`vignette ${locked?'exploring':''}`} aria-hidden="true"/>
+ <MusicControl language={language} locked={locked}/>
+ <header><a className="wordmark" href="./" aria-label={t.home}><span className="mark">⌇</span><span>{t.museum}<small>{t.experience}</small></span></a><div className="location"><span className="status-dot"/> {t.quiet}</div>{!locked&&<label className="language-picker"><span>{t.language}</span><select aria-label={t.language} value={language} onChange={e=>setLanguage(e.target.value)}><option value="zh-Hant">繁體中文</option><option value="zh-Hans">简体中文</option><option value="en">English</option></select></label>}</header>
+ {!locked&&!selected&&<section className="welcome" aria-label={t.welcome}><div className="eyebrow"><span/> {t.invitation}</div><h1>{t.titleFirst}<br/><em>{t.titleSecond}{language==='en'&&<TitleVines/>}</em><span className="title-dot">.</span></h1><p>{t.introFirst}<br/>{t.introSecond}</p><button id="enter-forest" disabled={!ready} onClick={()=>setError('')}><span>{!ready?t.preparing:entered?t.return:t.enter}</span><span className="arrow">↗</span></button><div className="enter-note">{entered?t.waiting:t.wander}</div>{error&&<p className="error" role="alert">{t.lockError}</p>}</section>}
+ {locked&&<><div className={`crosshair ${aim?'flower-target':''}`} aria-hidden="true"/>{aim&&<div className="flower-prompt"><span style={{color:aim.color}}>✧</span> {aimedPlant.name}<small>{t.discover}</small></div>}</>}
+ {selected&&<section className="botanical-card" role="dialog" aria-modal="true" aria-label={plant.name} style={{'--flower-color':selected.color}}><div className="card-reading" ref={cardReading} tabIndex={0} role="region" aria-label={t.herbarium}><div className="eyebrow">{t.herbarium}</div><div className="flower-emblem" aria-hidden="true">✧</div><span className="botanical-index">{t.discovery}</span><h2>{plant.name}</h2><div className="chinese-name">{plant.secondaryName}</div><div className="botanical-identity"><span>{t.botanical}</span><i lang="la">{plant.knowledge.botanical}</i></div>{plant.origin.hasInformation&&<div className="origin-knowledge"><h3>{t.harvest}</h3><dl><div><dt>{t.part}</dt><dd>{plant.origin.part}</dd></div><div><dt>{t.method}</dt><dd>{plant.origin.method}</dd></div><div className="growing-regions"><dt>{t.regions}</dt><dd>{plant.origin.regions}</dd><small>{t.scope}：{plant.origin.scope}</small></div></dl>{plant.origin.sources.length>0&&<div className="origin-sources"><span>{t.originSources}</span>{plant.origin.sources.map(source=><a key={source.url} href={source.url} target="_blank" rel="noreferrer">{source.label} ↗</a>)}</div>}</div>}<div className="plant-knowledge"><h3>{t.closer}</h3><dl>{['profile','growing','fact'].map(key=><div key={key}><dt>{t[key]}</dt><dd>{plant.knowledge[key]}</dd></div>)}</dl><a href={plant.knowledge.source} target="_blank" rel="noreferrer">{t.source} ↗</a></div>{selected.perfume&&<div className="perfume-note"><span>{t.palette}</span><dl><div><dt>{t.scent}</dt><dd>{plant.perfume.scent}</dd></div></dl><p>{plant.perfume.story}</p><a href={selected.perfume.source} target="_blank" rel="noreferrer">{t.reading} ↗</a></div>}<FlowerMeaning name={selected.name} language={language}/><details className="exhibit-description"><summary>{t.exhibit}</summary><p>{plant.note}</p></details>{plant.examples.length>0&&<section className="perfume-examples perfume-examples-compact" aria-label={et.title}><h3>{et.title}</h3><ul>{plant.examples.map(example=><li key={example.url}><a href={example.url} target="_blank" rel="noreferrer"><span>{example.brand} &middot; {example.name}</span><small>{example.concentration} &#8599;</small></a></li>)}</ul></section>}{language!=='en'&&<details className="original-text"><summary>{t.original}</summary><p lang="en">{selected.note}</p>{plant.origin.hasInformation&&['part','method','regions','scope'].map(key=><p key={key} lang="en">{localizePlant(selected,'en').origin[key]}</p>)}{['profile','growing','fact'].map(key=><p key={key} lang="en">{localizePlant(selected,'en').knowledge[key]}</p>)}{selected.perfume&&<p lang="en">{selected.perfume.story}</p>}</details>}</div><div className="card-actions"><div className="discovery-count">{t.count(discovered.length,FLOWERS.length)}</div><button id="enter-forest">{t.continue} <span className="arrow">↗</span></button><small>{t.resume}</small></div></section>}
+ <footer><div className="chapter"><span>01 /</span><div>{t.woodland}<small>{t.stillness}</small></div></div><div className="controls" aria-label={t.controls}><span><kbd>W</kbd><span className="key-row"><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span></span><span>{t.walk}</span><i/><span className="mouse-icon"/><span>{t.look}</span><i/><kbd>SHIFT</kbd><span>{t.faster}</span><i/><kbd>ESC</kbd><span>{t.pause}</span></div><div className="season">{t.morning} <span>·</span> {t.summer}</div></footer>
+ </main>;
+}
+createRoot(document.getElementById('root')).render(<App/>);

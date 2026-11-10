@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.DS_Store
+.env
+.env.*
+!.env.example
+*.log
+
+# Keep unused font variants locally; publish only the four referenced faces.
+fonts/*
+!fonts/SweiSpringCJKtc-Regular.ttf
+!fonts/SweiSpringCJKtc-Light.ttf
+!fonts/SweiSpringCJKtc-Medium.ttf
+!fonts/SweiSpringSugarCJKtc-Regular.ttf
+!fonts/*LICENSE*
+!fonts/*OFL*
