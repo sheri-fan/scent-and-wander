@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="640" viewBox="0 0 640 640">
+  <defs>
+    <filter id="paper" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency=".014" numOctaves="4" seed="23" stitchTiles="stitch"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 .55  0 0 0 0 .36  0 0 0 0 .15  .19 .19 .19 0 -.12"/>
+      <feBlend in="SourceGraphic" mode="multiply"/>
+    </filter>
+    <filter id="grain" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency=".72 .48" numOctaves="3" seed="71" stitchTiles="stitch"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 .39  0 0 0 0 .27  0 0 0 0 .12  .28 .28 .28 0 -.25"/>
+    </filter>
+  </defs>
+  <path fill="#efdfbb" filter="url(#paper)" d="M0 0h640v640H0z"/>
+  <path filter="url(#grain)" d="M0 0h640v640H0z"/>
+  <g fill="none" stroke="#8b693d" stroke-width=".5" opacity=".09">
+    <path d="m31 52 12 2m133 51 3 16m201-64 17-2m148 135 4 13M78 308l18 1m134-83 3 15m175 76 16-2m117 150 2 12M41 556l15 2m121-92 4 11m162 100 18-3m143-12 8 3M286 30l3 9m-7 350 12 2m281-97 9 1"/>
+  </g>
+</svg>

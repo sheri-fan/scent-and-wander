@@ -8,7 +8,8 @@ import { useMemo, useRef, useEffect, useState } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { Sky } from '@react-three/drei';
 import * as THREE from 'three';
-import { groundHeight, pathX, randomGenerator, resolveMovement } from './world';
+import { groundHeight, pathX, randomGenerator, resolveMovement, landingSurface } from './world';
+import {loadWalk,saveWalk,validWalk} from './walkMemory.js';
 const dummy=new THREE.Object3D();
 function Instances({geometry, material, items, shadow=false}) {
  const ref=useRef();
@@ -59,11 +60,40 @@ function Ground() {
  const path=useMemo(()=>{const v=[],uv=[];for(let i=0;i<240;i++){const z=-110+i;for(const dz of [0,1])for(const side of [-1,1]){const zz=z+dz,x=pathX(zz)+side*(2.05+.22*Math.sin(zz*.3));v.push(x,groundHeight(x,zz)+.018,zz);uv.push(side*.5+.5,zz*.25);}}const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(v,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));const idx=[];for(let i=0;i<240;i++){const a=i*4;idx.push(a,a+2,a+1,a+1,a+2,a+3);}g.setIndex(idx);g.computeVertexNormals();return g;},[]);
  return <><mesh geometry={geometry} receiveShadow><meshStandardMaterial map={map} color="#8a9165" roughness={1}/></mesh><mesh geometry={path} receiveShadow><meshStandardMaterial color="#a69670" map={map} roughness={1} side={THREE.DoubleSide}/></mesh></>;
 }
-function Walker({world,locked,onLock,onUnlock,colliders,cottage}) {
- const keys=useRef({}), velocity=useRef(new THREE.Vector2()),{camera,gl}=useThree();
- useEffect(()=>{const down=e=>{if(document.pointerLockElement!==gl.domElement||e.target?.closest?.('input,textarea,select,[contenteditable]')||e.isComposing)return;keys.current[e.code]=true;if(['KeyW','KeyA','KeyS','KeyD','ShiftLeft','ShiftRight'].includes(e.code))e.preventDefault();},up=e=>keys.current[e.code]=false,blur=()=>{keys.current={};velocity.current.set(0,0);};window.addEventListener('keydown',down);window.addEventListener('keyup',up);window.addEventListener('blur',blur);return()=>{window.removeEventListener('keydown',down);window.removeEventListener('keyup',up);window.removeEventListener('blur',blur);};},[]);
- useEffect(()=>{keys.current={};velocity.current.set(0,0);},[locked]);
- useFrame((state,delta)=>{if(!locked)return;const dt=Math.min(delta,.05),k=keys.current;const input=new THREE.Vector2(Number(!!k.KeyD)-Number(!!k.KeyA),Number(!!k.KeyS)-Number(!!k.KeyW)).normalize();const speed=k.ShiftLeft||k.ShiftRight?5.5:2.6;velocity.current.lerp(input.multiplyScalar(speed),1-Math.exp(-10*dt));const forward=new THREE.Vector3();camera.getWorldDirection(forward);forward.y=0;forward.normalize();const right=new THREE.Vector3().crossVectors(forward,camera.up);const dx=(right.x*velocity.current.x-forward.x*velocity.current.y)*dt,dz=(right.z*velocity.current.x-forward.z*velocity.current.y)*dt;const [x,z]=resolveMovement(camera.position.x,camera.position.z,dx,dz,colliders||world.colliders);camera.position.x=x;camera.position.z=z;const walking=velocity.current.length();camera.position.y=cottageWalkingHeight(cottage,x,z)+1.7+Math.sin(state.clock.elapsedTime*8)*.017*Math.min(walking,1);});
+function Walker({world,locked,onLock,onUnlock,colliders,cottage,rememberedWalk,doorOpen}) {
+ const keys=useRef({}), velocity=useRef(new THREE.Vector2()),jump=useRef({height:0,speed:0,requested:false,grounded:true}),{camera,gl}=useThree();
+ const explored=useRef(false),lastSave=useRef(0);
+ const settleJump=()=>{
+  const base=cottageWalkingHeight(cottage,camera.position.x,camera.position.z);
+  const surface=landingSurface(camera.position.x,camera.position.z,Infinity,-Infinity,base,world.colliders);
+  jump.current={height:Math.max(0,surface-base),speed:0,requested:false,grounded:true};
+ };
+
+ useEffect(()=>{
+  if(!rememberedWalk)return;
+  const base=cottageWalkingHeight(cottage,rememberedWalk.x,rememberedWalk.z);
+  const surface=landingSurface(rememberedWalk.x,rememberedWalk.z,Infinity,-Infinity,base,world.colliders);
+  jump.current.height=Math.max(0,surface-base);
+  camera.position.set(rememberedWalk.x,surface+1.7,rememberedWalk.z);
+  camera.quaternion.setFromEuler(new THREE.Euler(rememberedWalk.pitch,rememberedWalk.yaw,0,'YXZ'));
+ },[camera,cottage,rememberedWalk,world]);
+ const persist=()=>{
+  if(!explored.current)return;
+  const rotation=new THREE.Euler().setFromQuaternion(camera.quaternion,'YXZ');
+  saveWalk({version:1,x:camera.position.x,z:camera.position.z,yaw:rotation.y,pitch:rotation.x,doorOpen});
+ };
+ const persistRef=useRef(persist);persistRef.current=persist;
+ useEffect(()=>{
+  if(locked)explored.current=true;else persistRef.current();
+ },[locked,doorOpen]);
+ useEffect(()=>{
+  const save=()=>persistRef.current(),hide=()=>{if(document.visibilityState==='hidden')save();};
+  window.addEventListener('pagehide',save);window.addEventListener('beforeunload',save);document.addEventListener('visibilitychange',hide);
+  return()=>{save();window.removeEventListener('pagehide',save);window.removeEventListener('beforeunload',save);document.removeEventListener('visibilitychange',hide);};
+ },[]);
+ useEffect(()=>{const down=e=>{if(document.pointerLockElement!==gl.domElement||e.target?.closest?.('input,textarea,select,[contenteditable]')||e.isComposing)return;if(e.code==='Space'&&!e.repeat&&!keys.current.Space&&jump.current.grounded)jump.current.requested=true;keys.current[e.code]=true;if(['KeyW','KeyA','KeyS','KeyD','ShiftLeft','ShiftRight','Space'].includes(e.code))e.preventDefault();},up=e=>keys.current[e.code]=false,blur=()=>{keys.current={};velocity.current.set(0,0);settleJump();};window.addEventListener('keydown',down);window.addEventListener('keyup',up);window.addEventListener('blur',blur);return()=>{window.removeEventListener('keydown',down);window.removeEventListener('keyup',up);window.removeEventListener('blur',blur);};},[]);
+ useEffect(()=>{keys.current={};velocity.current.set(0,0);if(!locked)settleJump();},[locked]);
+ useFrame((state,delta)=>{if(!locked)return;if(state.clock.elapsedTime-lastSave.current>1){persistRef.current();lastSave.current=state.clock.elapsedTime;}const dt=Math.min(delta,.05),k=keys.current;const input=new THREE.Vector2(Number(!!k.KeyD)-Number(!!k.KeyA),Number(!!k.KeyS)-Number(!!k.KeyW)).normalize();const speed=k.ShiftLeft||k.ShiftRight?5.5:2.6;velocity.current.lerp(input.multiplyScalar(speed),1-Math.exp(-10*dt));const forward=new THREE.Vector3();camera.getWorldDirection(forward);forward.y=0;forward.normalize();const right=new THREE.Vector3().crossVectors(forward,camera.up);const dx=(right.x*velocity.current.x-forward.x*velocity.current.y)*dt,dz=(right.z*velocity.current.x-forward.z*velocity.current.y)*dt;const j=jump.current,solids=colliders||world.colliders,base=cottageWalkingHeight(cottage,camera.position.x,camera.position.z),before=base+j.height;if(j.requested){j.speed=4.2;j.requested=false;j.grounded=false;}const rising=j.speed>0;j.height+=j.speed*dt-6*dt*dt;j.speed-=12*dt;const [x,z]=resolveMovement(camera.position.x,camera.position.z,dx,dz,solids,base+j.height);camera.position.x=x;camera.position.z=z;const floor=cottageWalkingHeight(cottage,x,z),after=floor+j.height,surface=rising?floor:landingSurface(x,z,before,after,floor,solids);if(after<=surface){j.height=Math.max(0,surface-floor);j.speed=0;j.grounded=true;}else j.grounded=false;const walking=velocity.current.length();camera.position.y=floor+1.7+j.height+Math.sin(state.clock.elapsedTime*8)*.017*Math.min(walking,1);});
  useEffect(()=>{
  const canvas=gl.domElement,button=document.getElementById('enter-forest');
  const fail=()=>document.dispatchEvent(new Event('pointerlockerror'));
@@ -79,7 +109,11 @@ function Motes(){const points=useMemo(()=>{const rand=randomGenerator(9);return 
 export default function Forest({world,locked,onLock,onUnlock,quality,onAim,onDiscover,onCottageAim,onActivity,board,lastBlend}) {
  const benches=useMemo(()=>makeBenches(world),[world]);
  const cottage=useMemo(()=>makeCottage(world,benches),[world,benches]);
- const [doorOpen,setDoorOpen]=useState(false),[inside,setInside]=useState(false);
+ const rememberedWalk=useMemo(()=>{
+  const saved=loadWalk();
+  return saved&&validWalk(saved,[...world.colliders,...benchColliders(benches),...cottageColliders(cottage,saved.doorOpen)])?saved:null;
+ },[world,benches,cottage]);
+ const [doorOpen,setDoorOpen]=useState(()=>rememberedWalk?.doorOpen||false),[inside,setInside]=useState(false);
  const colliders=useMemo(()=>[...world.colliders,...benchColliders(benches),...cottageColliders(cottage,doorOpen)],[world,benches,cottage,doorOpen]);
- return <><color attach="background" args={['#b7c5a3']}/><fogExp2 attach="fog" args={['#a9b89a',.018]}/><Sky distance={450000} sunPosition={[50,28,-60]} inclination={.5} azimuth={.25} turbidity={6} rayleigh={1.1}/><hemisphereLight args={['#e5ead4','#38442c',1.6]}/><directionalLight position={[24,32,-35]} color="#fff0c4" intensity={3.2} castShadow shadow-mapSize={[quality==='high'?2048:1024,quality==='high'?2048:1024]} shadow-camera-left={-36} shadow-camera-right={36} shadow-camera-top={36} shadow-camera-bottom={-36} shadow-camera-far={110} shadow-normalBias={.07} shadow-bias={-.0002}><object3D attach="target" position={[0,0,0]}/></directionalLight><Ground/><Vegetation world={world} cottage={cottage}/><Benches benches={benches}/><Cottage cottage={cottage} doorOpen={doorOpen} board={board} lastBlend={lastBlend}/><CottageInteraction cottage={cottage} locked={locked} doorOpen={doorOpen} onDoor={()=>setDoorOpen(open=>!open)} onAim={onCottageAim} onActivity={onActivity} onInside={setInside}/><Motes/><Flowers world={world} locked={locked&&!inside} onAim={onAim} onDiscover={onDiscover}/><Walker world={world} cottage={cottage} colliders={colliders} locked={locked} onLock={onLock} onUnlock={onUnlock}/></>;
+ return <><color attach="background" args={['#b7c5a3']}/><fogExp2 attach="fog" args={['#a9b89a',.018]}/><Sky distance={450000} sunPosition={[50,28,-60]} inclination={.5} azimuth={.25} turbidity={6} rayleigh={1.1}/><hemisphereLight args={['#e5ead4','#38442c',1.6]}/><directionalLight position={[24,32,-35]} color="#fff0c4" intensity={3.2} castShadow shadow-mapSize={[quality==='high'?2048:1024,quality==='high'?2048:1024]} shadow-camera-left={-36} shadow-camera-right={36} shadow-camera-top={36} shadow-camera-bottom={-36} shadow-camera-far={110} shadow-normalBias={.07} shadow-bias={-.0002}><object3D attach="target" position={[0,0,0]}/></directionalLight><Ground/><Vegetation world={world} cottage={cottage}/><Benches benches={benches}/><Cottage cottage={cottage} doorOpen={doorOpen} board={board} lastBlend={lastBlend}/><CottageInteraction cottage={cottage} locked={locked} doorOpen={doorOpen} onDoor={()=>setDoorOpen(open=>!open)} onAim={onCottageAim} onActivity={onActivity} onInside={setInside}/><Motes/><Flowers world={world} locked={locked&&!inside} onAim={onAim} onDiscover={onDiscover}/><Walker rememberedWalk={rememberedWalk} doorOpen={doorOpen} world={world} cottage={cottage} colliders={colliders} locked={locked} onLock={onLock} onUnlock={onUnlock}/></>;
 }

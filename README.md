@@ -211,3 +211,19 @@ Aim at the door and press **E** or click to open it, then walk inside. Walls, th
 Blends and the blackboard are saved in this browser's local storage and survive refreshes. They are private to the browser, not shared between visitors or devices. Clearing browser storage removes them.
 
 Click the bottle label in the perfume workshop to customize its title, small inscription, paper colour, text colour and lettering style. An empty label title follows the scent name. Use **Save my scent** to save the design with the blend; **Use this blend** restores its label for further editing. The saved design also appears on the table's bottle. Older blends receive the original cream label automatically.
+
+Press **Space** during exploration to jump. Holding Space does not repeat jumps; land and press it again to jump again. Fallen-log collisions account for foot height: jump high enough to cross them, land on their tops, or walk off naturally. Trees, large rocks, furniture and cottage walls remain solid. Pausing or restoring a saved position on a log settles you on its top. Text fields retain normal spaces while exploration is paused. This addition is local only.
+
+Your walking position, viewing direction and cottage door state are saved automatically in this browser while exploring, when pausing, and when leaving or refreshing the page. Entering again resumes at the saved spot, including inside the cottage. Refreshes land you at normal eye height rather than resuming a jump. Invalid positions, positions blocked by solid scenery, and unavailable storage fall back to the original starting point. This record is private to the current browser and website origin; local and published sites have separate records. Clearing site storage removes the record. This addition is local only.
+
+## OCO Parfum collection (data only)
+
+`src/perfumeExpansion.js` includes Hong Kong brand OCO Parfum and ten bilingual perfume entries: Mnesis 明前, Dawn 朝霧, Dhyana 桑殊, Rif 礁然, Lyvn 禰生, Zaie 臧恩, Unmei 緰枺, Irek 亦俞, Lava 歷梵 and V00 裘野. Official product links come from [OCO's Eau de Parfum collection](https://oco.com.hk/collections/eau-de-parfum), reviewed 2026-11-10. The supplied note lists are preserved without inferring a top/heart/base ordering or natural ingredients.
+
+Exact existing botanical matches appear in the current compact perfume lists. Frangipani reuses Plumeria; tea styles reuse Tea Plant. White champaca, saffron crocus and other botanicals without matching exhibits remain references only. Zaie and Lava are stored in the collection but have no matching existing exhibit, so do not appear on an unrelated plant card. No forest models, placements, UI or interaction changes are part of this addition.
+
+Source caveats are retained with each affected perfume: Mnesis's official English page says “white orchid” rather than establishing white champaca's identity; Irek says “scented tea” rather than confirming a separate jasmine flower note; Unmei's reviewed awards-edition page did not expose a note list, so full note verification remains pending. Oakmoss is kept separate from woodland moss, and woody notes are not mapped to cedar without evidence. Botanical links illustrate scent associations, not confirmed physical ingredients. This addition is local only.
+
+## Author page
+
+The book button on the welcome and paused screens opens a botanical book page crediting **Hui-Ju Fan** and **Cindy Lee** as co-creators. It uses the existing local fonts, warm paper tones and forest greens, with English, Traditional Chinese and Simplified Chinese text. Close it with Escape, the close button, or **Back to the forest**; then enter or resume normally. The page keeps keyboard focus within its controls and returns focus to the book button when closed. Opening it preserves the current walk and discoveries. This addition is local only.

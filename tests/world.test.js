@@ -4,6 +4,19 @@ import { makeWorld, pathX, resolveMovement, WORLD_RADIUS } from '../src/world.js
 test('forest is deterministic and keeps the entire walking path clear',()=>{const a=makeWorld();assert.deepEqual(a,makeWorld());assert.ok(a.trees.length>400);for(const t of a.trees)assert.ok(Math.abs(t.x-pathX(t.z))>=3.3);for(let z=-85;z<85;z+=.2){const x=pathX(z);assert.ok(a.colliders.every(c=>Math.hypot(x-c.x,z-c.z)>c.radius+.32));}});
 test('movement blocks solids, slides along them, and respects forest bounds',()=>{const c=[{x:1,z:0,radius:.5}];assert.deepEqual(resolveMovement(0,0,.5,.2,c),[0,.2]);assert.deepEqual(resolveMovement(0,0,-.5,.2,c),[-.5,.2]);assert.deepEqual(resolveMovement(WORLD_RADIUS-3,0,3,0,[]),[WORLD_RADIUS-3,0]);});
 
+test('jumping clears low logs, lands on their tops, and keeps tall solids blocking',async()=>{
+ const {landingSurface}=await import('../src/world.js');
+ const log={x:1,z:0,radius:.22,top:.48};
+ assert.deepEqual(resolveMovement(0,0,.6,0,[log],0),[0,0]);
+ assert.deepEqual(resolveMovement(0,0,.6,0,[log],.3),[0,0]);
+ assert.deepEqual(resolveMovement(0,0,.6,0,[log],.6),[.6,0]);
+ assert.deepEqual(resolveMovement(0,0,.6,0,[{x:1,z:0,radius:.22}],1),[0,0]);
+ assert.equal(landingSurface(1,0,.6,.4,0,[log]),.48);
+ assert.equal(landingSurface(1,0,.2,.3,0,[log]),0);
+ assert.equal(landingSurface(2,0,.6,.4,0,[log]),0);
+ assert.ok(makeWorld().colliders.filter(c=>Number.isFinite(c.top)).length===makeWorld().logs.length*7);
+});
+
 test('random woodland layout stays compact, spaced, and clear of solid scenery',async()=>{
  const {FLOWERS,makeFlowerPatches,GARDEN_CENTER,GARDEN_RADIUS,PATCH_GAP}=await import('../src/flowers.js');
  const world=makeWorld(),patches=makeFlowerPatches(world),flowers=patches.filter(p=>!p.ambient);
@@ -48,7 +61,7 @@ test('perfume examples match real exhibits and retain complete official-source m
  const {FLOWERS}=await import('../src/flowers.js');
  const {PERFUME_EXAMPLES}=await import('../src/perfumeExamples.js');
  const names=new Set(FLOWERS.map(p=>p.name));
- const hosts=new Set(['www.yslbeautyus.com','www.acquadiparma.com','www.chanel.com','www.dior.com','www.byredo.com','www.jomalone.com','www.prada-beauty.com','www.mugler.com','www.guerlain.com','www.fredericmalle.com','diptyqueparis.com','uk.diptyqueparis.com','www.lelabofragrances.com','www.gucci.com','www.hermes.com','sergelutens.fr','www.penhaligons.com','www.florislondon.com','www.esteelauder.com','www.tomfordbeauty.com','www.franciskurkdjian.com','parfums-de-marly.com','amouage.com','www.bykilian.com','bdkparfums.com','us.nishane.com','www.loccitane.com','www.dsanddurga.com','fr.lalique.com','www.giorgioarmanibeauty-usa.com','www.lancome-usa.com','www.chloe.com','www.artisanparfumeur.com','www.maisonmargiela-fragrances.us','us.louisvuitton.com','www.loewe.com','www.creedfragrance.com','www.valentino-beauty.us','www.panseven.com']);
+ const hosts=new Set(['www.yslbeautyus.com','www.acquadiparma.com','www.chanel.com','www.dior.com','www.byredo.com','www.jomalone.com','www.prada-beauty.com','www.mugler.com','www.guerlain.com','www.fredericmalle.com','diptyqueparis.com','uk.diptyqueparis.com','www.lelabofragrances.com','www.gucci.com','www.hermes.com','sergelutens.fr','www.penhaligons.com','www.florislondon.com','www.esteelauder.com','www.tomfordbeauty.com','www.franciskurkdjian.com','parfums-de-marly.com','amouage.com','www.bykilian.com','bdkparfums.com','us.nishane.com','www.loccitane.com','www.dsanddurga.com','fr.lalique.com','www.giorgioarmanibeauty-usa.com','www.lancome-usa.com','www.chloe.com','www.artisanparfumeur.com','www.maisonmargiela-fragrances.us','us.louisvuitton.com','www.loewe.com','www.creedfragrance.com','www.valentino-beauty.us','www.panseven.com','oco.com.hk']);
  for(const [plant,examples] of Object.entries(PERFUME_EXAMPLES)){
   assert.ok(names.has(plant),plant);
   assert.equal(new Set(examples.map(p=>p.url)).size,examples.length,plant+' duplicate link');
@@ -257,4 +270,55 @@ test('bottle labels preserve safe custom designs and migrate older blends',async
   assert.deepEqual(loadBlends()[0].label,cleanLabel(null));
   assert.deepEqual(loadBlends()[1].label,label);
  }finally{if(previous===undefined)delete globalThis.localStorage;else globalThis.localStorage=previous;}
+});
+
+test('walk memory restores valid positions and rejects unsafe or broken saves',async()=>{
+ const {validWalk,saveWalk,loadWalk,WALK_KEY}=await import('../src/walkMemory.js');
+ const pose={version:1,x:0,z:24,yaw:.6,pitch:-.2,doorOpen:true};
+ assert.equal(validWalk(pose),true);
+ for(const changed of [{x:NaN},{z:1000},{yaw:Infinity},{pitch:Math.PI},{version:0}])assert.equal(validWalk({...pose,...changed}),false);
+ assert.equal(validWalk(pose,[{x:0,z:24,radius:.5}]),false);
+ assert.equal(validWalk(pose,[{x:0,z:24,radius:.22,top:.48}]),true);
+ const previous=Object.getOwnPropertyDescriptor(globalThis,'localStorage');let stored=null;
+ try{
+  Object.defineProperty(globalThis,'localStorage',{configurable:true,value:{getItem:key=>key===WALK_KEY?stored:null,setItem:(key,value)=>{if(key===WALK_KEY)stored=value;}}});
+  assert.equal(loadWalk(),null);assert.equal(saveWalk(pose),true);assert.deepEqual(loadWalk(),pose);
+  stored='broken json';assert.equal(loadWalk(),null);
+  stored=JSON.stringify({...pose,x:1000});assert.equal(loadWalk(),null);
+  Object.defineProperty(globalThis,'localStorage',{configurable:true,get(){throw Error('Storage blocked');}});
+  assert.equal(loadWalk(),null);assert.equal(saveWalk(pose),false);
+ }finally{if(previous)Object.defineProperty(globalThis,'localStorage',previous);else delete globalThis.localStorage;}
+});
+
+test('OCO adds ten bilingual perfumes with exact exhibit links and data-only references',async()=>{
+ const {OCO_BRAND,OCO_PERFUMES,OCO_BOTANICAL_REFERENCES:refs,PERFUME_ADDITIONS,PSEVEN_BOTANICAL_REFERENCES}=await import('../src/perfumeExpansion.js');
+ const {FLOWERS,makeFlowerPatches}=await import('../src/flowers.js');
+ const {PERFUME_EXAMPLES}=await import('../src/perfumeExamples.js');
+ const {localizePlant}=await import('../src/i18n.js');
+ assert.deepEqual(OCO_BRAND,{name:'OCO Parfum',origin:'Hong Kong',website:'https://oco.com.hk/'});
+ const expected={Mnesis:['Plumeria','Tea Plant','Vetiver'],Dawn:['Orange Blossom','Tea Plant'],Dhyana:['Chrysanthemum','Geranium','Vetiver','Tea Plant'],Rif:['Lemon','Tea Plant'],Lyvn:['Vetiver'],Zaie:[],Unmei:['Tea Plant'],Irek:['Osmanthus','Elderflower','Tea Plant'],Lava:[],V00:['Tea Plant']};
+ assert.equal(OCO_PERFUMES.length,10);assert.equal(new Set(OCO_PERFUMES.map(p=>p.url)).size,10);
+ assert.equal(refs['Tea Plant'],PSEVEN_BOTANICAL_REFERENCES['Tea Plant']);
+ for(const p of OCO_PERFUMES){
+  assert.ok(PERFUME_ADDITIONS.includes(p));assert.equal(p.name,`${p.englishName} ${p.chineseName}`);
+  assert.equal(p.brandOrigin,'Hong Kong');assert.equal(p.evidence,'note');assert.equal(p.physicalIngredientsVerified,false);
+  assert.equal(new URL(p.url).hostname,'oco.com.hk');
+  assert.deepEqual([...p.plants].sort(),[...expected[p.englishName]].sort());
+  assert.equal(p.notes.en.listed.length,p.notes.zh.listed.length);
+  assert.equal(p.noteAssociations.length,p.notes.en.listed.length);
+  assert.equal(new Set(p.botanicalReferences).size,p.botanicalReferences.length);
+  for(const key of p.botanicalReferences){assert.ok(refs[key]?.name&&refs[key]?.chinese);if(refs[key].exhibit)assert.ok(FLOWERS.some(f=>f.name===refs[key].exhibit));}
+  for(const plant of p.plants)for(const language of ['en','zh-Hant','zh-Hans']){
+   const card=localizePlant(FLOWERS.find(f=>f.name===plant),language);
+   assert.equal(card.examples.filter(e=>e.url===p.url).length,1,`${p.name} on ${plant}: ${language}`);
+  }
+ }
+ for(const key of ['White Champaca','Saffron Crocus','Oakmoss','Bamboo','Fig','Fir'])assert.equal(refs[key].exhibit,null);
+ assert.equal(refs.Frangipani.exhibit,'Plumeria');
+ assert.ok(refs['Saffron Crocus'].fragrantPart.en.includes('Stigmas'));
+ assert.ok(OCO_PERFUMES.find(p=>p.englishName==='Mnesis').noteCaveats.en.includes('white orchid'));
+ assert.equal(OCO_PERFUMES.find(p=>p.englishName==='Unmei').verificationStatus,'pending-full-note-verification');
+ assert.equal(FLOWERS.length,79);assert.equal(makeFlowerPatches(makeWorld()).length,212);
+ assert.ok(!PERFUME_EXAMPLES['Woodland Moss']?.some(p=>p.brand===OCO_BRAND.name));
+ assert.ok(!PERFUME_EXAMPLES.Cedar?.some(p=>p.brand===OCO_BRAND.name));
 });

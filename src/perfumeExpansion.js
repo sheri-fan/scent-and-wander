@@ -34,7 +34,91 @@ const pseven = {
  physicalIngredientsVerified:false,
 };
 
+// OCO notes supplied by the museum owner; official product pages reviewed 2026-11-10.
+// References without an exact existing exhibit remain data-only. In particular,
+// white champaca is not the generic Magnolia/Orchid exhibit, and oakmoss is a
+// lichen rather than the Woodland Moss exhibit. Woody notes never imply cedar.
+export const OCO_BRAND={name:'OCO Parfum',origin:'Hong Kong',website:'https://oco.com.hk/'};
+export const OCO_BOTANICAL_REFERENCES={
+ 'White Champaca':{name:'White Champaca',chinese:'白蘭花',exhibit:null},
+ Frangipani:{name:'Frangipani',chinese:'雞蛋花',exhibit:'Plumeria'},
+ 'Orange Blossom':{name:'Orange Blossom',chinese:'橙花',exhibit:'Orange Blossom'},
+ Chrysanthemum:{name:'Chrysanthemum',chinese:'菊花',exhibit:'Chrysanthemum'},
+ Geranium:{name:'Geranium',chinese:'天竺葵',exhibit:'Geranium'},
+ Osmanthus:PSEVEN_BOTANICAL_REFERENCES.Osmanthus,
+ Elderflower:{name:'Elderflower',chinese:'接骨木花',exhibit:'Elderflower'},
+ 'Saffron Crocus':{name:'Saffron Crocus',chinese:'番紅花',exhibit:null,fragrantPart:{en:'Stigmas (saffron note)',zh:'柱頭（番紅花香調）'}},
+ 'Tea Plant':PSEVEN_BOTANICAL_REFERENCES['Tea Plant'],
+ Vetiver:{name:'Vetiver',chinese:'香根草',aliases:['岩蘭草'],exhibit:'Vetiver'},
+ 'White Peach':{name:'White Peach',chinese:'白桃',exhibit:null},
+ Fennel:{name:'Fennel',chinese:'甜茴香',exhibit:null},
+ Seaweed:{name:'Seaweed',chinese:'海藻',exhibit:null},
+ Lemon:PSEVEN_BOTANICAL_REFERENCES.Lemon,
+ 'Guaiac Wood':{name:'Guaiac Wood',chinese:'癒創木',exhibit:null},
+ Grapefruit:{name:'Grapefruit',chinese:'葡萄柚',exhibit:null},
+ Fig:{name:'Fig',chinese:'無花果',exhibit:null},
+ 'Willow Bud':{name:'Willow Bud',chinese:'柳芽',exhibit:null},
+ Bamboo:{name:'Bamboo',chinese:'竹子',exhibit:null},
+ Ginger:{name:'Ginger',chinese:'薑',exhibit:null},
+ Tobacco:{name:'Tobacco',chinese:'煙草',exhibit:null},
+ 'Palo Santo':{name:'Palo Santo',chinese:'聖木',exhibit:null},
+ Oakmoss:{name:'Oakmoss',chinese:'橡木苔',exhibit:null,referenceType:'lichen'},
+ Tangerine:{name:'Tangerine',chinese:'柑橘',exhibit:null},
+ Licorice:{name:'Licorice',chinese:'甘草',exhibit:null},
+ 'Red Bean':{name:'Red Bean',chinese:'紅豆',exhibit:null},
+ Papyrus:{name:'Papyrus',chinese:'紙莎草',exhibit:null},
+ Fir:{name:'Fir',chinese:'冷杉',exhibit:null},
+ Cucumber:{name:'Cucumber',chinese:'青瓜',exhibit:null},
+ Carrot:{name:'Carrot',chinese:'胡蘿蔔',exhibit:null},
+ 'Sichuan Pepper':{name:'Sichuan Pepper',chinese:'花椒',exhibit:null},
+ Coffee:{name:'Coffee',chinese:'咖啡',exhibit:null},
+};
+// A null reference denotes an accord or non-botanical note, not a missing plant.
+const ocoNote=(en,zh,reference=null)=>({en,zh,reference});
+export const OCO_PERFUMES=[
+ {englishName:'Mnesis',chineseName:'明前',slug:'mnesis-eau-de-parfum',
+  associations:[ocoNote('White champaca','白蘭花','White Champaca'),ocoNote('Frangipani','雞蛋花','Frangipani'),ocoNote('Longjing tea','龍井茶','Tea Plant'),ocoNote('Vetiver','香根草','Vetiver')],
+  caveat:{en:'White champaca follows the supplied reference. The official English page says white orchid without a botanical identity; it is not linked to Magnolia or Orchid.',zh:'白蘭花保留使用者提供的參考；官方英文頁寫作 white orchid，未核實植物身分，因此不連結木蘭或蘭花展品。'}},
+ {englishName:'Dawn',chineseName:'朝霧',slug:'dawn-eau-de-parfum',
+  associations:[ocoNote('Orange blossom','橙花','Orange Blossom'),ocoNote('White peach','白桃','White Peach'),ocoNote('White tea','白茶','Tea Plant'),ocoNote('Oolong tea','烏龍茶','Tea Plant')]},
+ {englishName:'Dhyana',chineseName:'桑殊',slug:'dhyana-eau-de-parfum',
+  associations:[ocoNote('Chrysanthemum','菊花','Chrysanthemum'),ocoNote('Geranium','天竺葵','Geranium'),ocoNote('Vetiver','岩蘭草','Vetiver'),ocoNote('Sweet fennel','甜茴香','Fennel'),ocoNote('Pu-erh tea','普洱茶','Tea Plant'),ocoNote('Oud accord','烏木香調')]},
+ {englishName:'Rif',chineseName:'礁然',slug:'rif-eau-de-parfum',
+  associations:[ocoNote('Seaweed','海藻','Seaweed'),ocoNote('Lemon peel','檸檬皮','Lemon'),ocoNote('Guaiac wood','癒創木','Guaiac Wood'),ocoNote('Black tea','黑茶','Tea Plant'),ocoNote('Mineral / rock dust accord','岩石粉塵香調')]},
+ {englishName:'Lyvn',chineseName:'禰生',slug:'lyvn-eau-de-parfum',
+  associations:[ocoNote('Grapefruit','葡萄柚','Grapefruit'),ocoNote('Fig','無花果','Fig'),ocoNote('Vetiver','香根草','Vetiver'),ocoNote('Willow bud','柳芽','Willow Bud'),ocoNote('Bamboo','竹子','Bamboo')]},
+ {englishName:'Zaie',chineseName:'臧恩',slug:'zaie-eau-de-parfum',
+  associations:[ocoNote('Ginger','薑','Ginger'),ocoNote('Tobacco','煙草','Tobacco'),ocoNote('Willow bud','柳芽','Willow Bud'),ocoNote('Palo santo','聖木','Palo Santo'),ocoNote('Oakmoss','橡木苔','Oakmoss'),ocoNote('Incense accord','焚香香調')]},
+ {englishName:'Unmei',chineseName:'緰枺',slug:'unmei-eau-de-parfum',
+  associations:[ocoNote('Dried tangerine peel','陳皮','Tangerine'),ocoNote('Licorice','甘草','Licorice'),ocoNote('Red bean','紅豆','Red Bean'),ocoNote('Papyrus','紙莎草','Papyrus'),ocoNote('Fir','冷杉','Fir'),ocoNote('Pu-erh tea','普洱茶','Tea Plant')],
+  caveat:{en:'The supplied notes are retained; full note verification remains pending because the reviewed official awards-edition page did not expose a note list.',zh:'保留使用者提供的香調；檢閱的官方得獎版頁面未顯示完整香調表，仍待核實。'}},
+ {englishName:'Irek',chineseName:'亦俞',slug:'%E4%BA%A6%E4%BF%9E-irek-eau-de-parfum',
+  associations:[ocoNote('Osmanthus','桂花','Osmanthus'),ocoNote('Elderflower','接骨木花','Elderflower'),ocoNote('Cucumber','青瓜','Cucumber'),ocoNote('Jasmine tea','香片茶','Tea Plant'),ocoNote('Honey','蜂蜜')],
+  caveat:{en:'The supplied jasmine-tea wording is retained; the official English page says scented tea. It links to Tea Plant only, not to a separate jasmine-flower note.',zh:'保留使用者提供的香片茶描述；官方英文寫作 scented tea。僅連結茶樹，不推斷另有茉莉花香調。'}},
+ {englishName:'Lava',chineseName:'歷梵',slug:'%E6%AD%B7%E6%A2%B5lava-eau-de-parfum',
+  associations:[ocoNote('Saffron','番紅花（柱頭）','Saffron Crocus'),ocoNote('Carrot','胡蘿蔔','Carrot'),ocoNote('Sichuan pepper','花椒','Sichuan Pepper'),ocoNote('Creamy accord','奶油香調')]},
+ {englishName:'V00',chineseName:'裘野',slug:'v00-eau-de-parfum',
+  associations:[ocoNote('Coffee','咖啡','Coffee'),ocoNote('Black tea','紅茶','Tea Plant'),ocoNote('Leather accord','皮革香調'),ocoNote('Musk accord','麝香香調')]},
+].map(({englishName,chineseName,slug,associations,caveat})=>{
+ const botanicalReferences=[...new Set(associations.map(n=>n.reference).filter(Boolean))];
+ return {
+  brand:OCO_BRAND.name,brandOrigin:OCO_BRAND.origin,brandWebsite:OCO_BRAND.website,
+  name:`${englishName} ${chineseName}`,englishName,chineseName,
+  concentration:'Eau de Parfum',concentrationVerified:true,evidence:'note',physicalIngredientsVerified:false,
+  url:`${OCO_BRAND.website}products/${slug}`,reviewedAt:'2026-11-10',
+  verificationStatus:englishName==='Unmei'?'pending-full-note-verification':'user-supplied-notes-official-page-reviewed',
+  notesSource:'user-supplied',noteAssociations:associations,botanicalReferences,
+  plants:[...new Set(botanicalReferences.map(key=>OCO_BOTANICAL_REFERENCES[key].exhibit).filter(Boolean))],
+  // No top/heart/base pyramid is inferred from the supplied unranked list.
+  notes:{en:{listed:associations.map(n=>n.en)},zh:{listed:associations.map(n=>n.zh)}},
+  en:'Supplied fragrance-note associations; scent descriptions do not confirm natural ingredients or a botanical extract.',
+  zh:'依提供的香調建立關聯；氣味描述不代表已確認使用天然成分或植物萃取物。',
+  ...(caveat?{noteCaveats:caveat}:{}),
+ };
+});
+
 export const PERFUME_ADDITIONS = [
+ ...OCO_PERFUMES,
  {
   ...pseven,name:'茗香水 (Taiwanese Tea Perfume)',plants:['Tea Plant','Taiwanese Hinoki Cypress','Spikenard','Patchouli','Tonka Bean'],
   url:'https://www.panseven.com/products/taiwan-teaperfume',
