@@ -227,3 +227,15 @@ Source caveats are retained with each affected perfume: Mnesis's official Englis
 ## Author page
 
 The book button on the welcome and paused screens opens a botanical book page crediting **Hui-Ju Fan** and **Cindy Lee** as co-creators. It uses the existing local fonts, warm paper tones and forest greens, with English, Traditional Chinese and Simplified Chinese text. Close it with Escape, the close button, or **Back to the forest**; then enter or resume normally. The page keeps keyboard focus within its controls and returns focus to the book button when closed. Opening it preserves the current walk and discoveries. This addition is local only.
+
+## Sitting on benches
+
+Approach the front of any wooden bench, aim at it, and press **E** or click to sit. The camera eases to seated eye height, facing the view. Mouse look stays available; walking and jumping pause while seated. Press **E** or click again to stand in a checked clear spot in front of the bench. Escape pauses normally, and resuming keeps your seat. Refreshing while seated restores your walk at the safe standing spot beside that bench. Prompts support all three interface languages. This addition is local only.
+
+## Flower basket and gathered perfumes
+
+Aim at a nearby plant and press **F** to collect it without pausing your walk, or open its discovery card and choose **Add to my basket**. A brief message confirms collection. Repeated presses do not duplicate a plant. Each of the 79 discovery types can be collected once as a reusable virtual scent study; the plants and their positions stay in the forest. Press **B** while exploring, or use the basket button while paused, to inspect your collection. Press **B** again to close the basket. F only collects while exploring; both shortcuts leave text fields and Chinese input composition alone. The basket counter updates as you collect. Choose **Edit basket**, use **Remove** on any collected study, then choose **Done**. Removals save automatically, and removed plants can be collected again with F or their discovery card. Saved perfumes remain intact, while the workshop updates to use only the notes still in the basket. English, Traditional Chinese and Simplified Chinese are supported.
+
+Collect at least **three different plants**, then visit the cottage's perfume table. The three note selectors offer only your collected studies. Choose three different notes, adjust their proportions, customize the bottle label, and save the perfume as before. Duplicate notes cannot be saved as a three-note blend. Existing saved perfumes and labels remain intact; collect their notes to load those recipes again. Notes are reusable and are not consumed when saving a perfume.
+
+The basket saves in this browser's local storage and survives refreshes. If storage is unavailable, collection still works for the current visit and displays a warning. These are creative, virtual scent associations, including interpretations for plants and fungi; they do not imply safe harvesting, edible plants or actual perfume extracts. No physical formulation is provided. This addition is local only.

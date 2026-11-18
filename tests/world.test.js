@@ -322,3 +322,52 @@ test('OCO adds ten bilingual perfumes with exact exhibit links and data-only ref
  assert.ok(!PERFUME_EXAMPLES['Woodland Moss']?.some(p=>p.brand===OCO_BRAND.name));
  assert.ok(!PERFUME_EXAMPLES.Cedar?.some(p=>p.brand===OCO_BRAND.name));
 });
+
+test('every bench has a natural seated eye height and a clear place to stand',async()=>{
+ const {makeBenches,benchColliders,benchSeatPosition,benchStandPosition}=await import('../src/benches.js');
+ const {makeCottage,cottageColliders}=await import('../src/cottage.js');
+ const {validWalk}=await import('../src/walkMemory.js');
+ const world=makeWorld(),benches=makeBenches(world),cottage=makeCottage(world,benches);
+ const solids=[...world.colliders,...benchColliders(benches),...cottageColliders(cottage)];
+ for(const bench of benches){
+  const seat=benchSeatPosition(bench),stand=benchStandPosition(bench,solids);
+  assert.equal(seat.y,bench.y+1.37);assert.ok(stand);
+  assert.ok(Math.hypot(seat.x-bench.x,seat.z-bench.z)<.1);
+  assert.ok(validWalk({version:1,...stand,yaw:0,pitch:0},solids));
+  assert.ok(resolveMovement(stand.x,stand.z,.01,0,solids)[0]>stand.x);
+ }
+ assert.equal(benchStandPosition(benches[0],[{x:benches[0].x,z:benches[0].z,radius:10}]),null);
+});
+
+test('flower baskets deduplicate, persist and limit blending to three collected studies',async()=>{
+ const {cleanBasket,loadBasket,collectInBasket,removeFromBasket,canBlendFromBasket}=await import('../src/basket.js');
+ const {SCENT_NOTES}=await import('../src/workshop.js');
+ const {FLOWERS}=await import('../src/flowers.js');
+ assert.equal(SCENT_NOTES.length,FLOWERS.length);
+ assert.deepEqual(cleanBasket(['Rose Bush',null,'unknown','Rose Bush','Lavender']),['Rose Bush','Lavender']);
+ assert.deepEqual(cleanBasket({}),[]);
+ const notes=[{id:'Rose Bush',parts:3},{id:'Lavender',parts:4},{id:'Jasmine',parts:3}],ids=notes.map(n=>n.id);
+ assert.equal(canBlendFromBasket(notes,ids),true);
+ assert.equal(canBlendFromBasket(notes,ids.slice(0,2)),false);
+ assert.equal(canBlendFromBasket([notes[0],notes[0],notes[0]],ids),false);
+ assert.equal(canBlendFromBasket([null,notes[1],notes[2]],ids),false);
+ assert.equal(canBlendFromBasket([{...notes[0],parts:100},notes[1],notes[2]],ids),false);
+ assert.equal(canBlendFromBasket([{id:'unknown',parts:1},notes[1],notes[2]],['unknown',...ids]),false);
+ const previous=Object.getOwnPropertyDescriptor(globalThis,'localStorage');let stored=null;
+ try{
+  Object.defineProperty(globalThis,'localStorage',{configurable:true,value:{getItem:()=>stored,setItem:(key,value)=>{stored=value;}}});
+  assert.deepEqual(loadBasket(),[]);
+  assert.deepEqual(collectInBasket(['Rose Bush'],'Lavender'),{basket:['Rose Bush','Lavender'],saved:true});
+  assert.deepEqual(loadBasket(),['Rose Bush','Lavender']);
+  assert.equal(collectInBasket(loadBasket(),'Lavender').basket.length,2);
+  assert.deepEqual(removeFromBasket(loadBasket(),'Rose Bush'),{basket:['Lavender'],saved:true});
+  assert.deepEqual(loadBasket(),['Lavender']);
+  assert.equal(canBlendFromBasket(notes,loadBasket()),false);
+  assert.deepEqual(collectInBasket(loadBasket(),'Rose Bush').basket,['Lavender','Rose Bush']);
+  assert.deepEqual(removeFromBasket(['Jasmine'],'Jasmine').basket,[]);
+  stored='broken';assert.deepEqual(loadBasket(),[]);
+  Object.defineProperty(globalThis,'localStorage',{configurable:true,get(){throw Error('Storage unavailable');}});
+  assert.deepEqual(loadBasket(),[]);assert.deepEqual(collectInBasket([], 'Jasmine'),{basket:['Jasmine'],saved:false});
+  assert.deepEqual(removeFromBasket(['Jasmine'],'Jasmine'),{basket:[],saved:false});
+ }finally{if(previous)Object.defineProperty(globalThis,'localStorage',previous);else delete globalThis.localStorage;}
+});

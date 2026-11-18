@@ -1,4 +1,5 @@
-export const SCENT_NOTES = [
+import {FLOWERS} from './flowers.js';
+const ORIGINAL_SCENT_NOTES = [
  {id:'Bergamot',zh:'佛手柑',color:'#d9d583'}, {id:'Lemon',zh:'檸檬',color:'#e7cc69'},
  {id:'Tea Plant',zh:'茶樹',color:'#9fbd89'}, {id:'Lavender',zh:'薰衣草',color:'#b7a1d7'},
  {id:'Rose Bush',zh:'玫瑰',color:'#dca3ad'}, {id:'Jasmine',zh:'茉莉',color:'#eee1ae'},
@@ -7,6 +8,8 @@ export const SCENT_NOTES = [
  {id:'Patchouli',zh:'廣藿香',color:'#96aa7b'}, {id:'Vetiver',zh:'香根草',color:'#b8b082'},
  {id:'Tonka Bean',zh:'零陵香豆',color:'#b49a87'},
 ];
+// These are virtual scent studies, not instructions to harvest or extract plants.
+export const SCENT_NOTES=[...ORIGINAL_SCENT_NOTES,...FLOWERS.filter(p=>!ORIGINAL_SCENT_NOTES.some(n=>n.id===p.name)).map(p=>({id:p.name,zh:p.chinese,color:p.color}))];
 export const BLENDS_KEY='scent-and-wander-blends';
 export const BOARD_KEY='scent-and-wander-blackboard';
 export function cleanLabel(value){

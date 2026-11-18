@@ -5,7 +5,7 @@ export function authorLabels(language){return chineseText(language==='en'?{
  open:'ABOUT US',eyebrow:'ABOUT US',title:'Meet the Creators',titleEnd:'',intro:'The people and ideas behind Scent & Wander',
  role:'Co-creator',project:'SCENT & WANDER',story:'A quiet place to follow your curiosity. Through flowers, fragrance and small discoveries, this virtual perfume museum invites you to explore at your own pace.',
  closing:'Thank you for wandering with us.',back:'Back to the forest',close:'Close author page',
- }:{open:'認識創作者',eyebrow:'來自創作者的一頁',title:'認識創作者',titleEnd:'',intro:'循香漫遊背後的人與靈感',role:'共同創作者',project:'循香漫遊',story:'留一處安靜的地方，讓好奇心帶路。透過花草、香氣與微小的發現，這座虛擬香水博物館邀請你，以自己的步調探索。',closing:'謝謝你，與我們一起漫遊。',back:'回到森林',close:'關閉創作者頁面'},language);}
+ }:{open:'ABOUT US',eyebrow:'ABOUT US',title:'ABOUT US',titleEnd:'',intro:'循香漫遊背後的人與靈感',role:'共同創作者',project:'循香漫遊',story:'留一處安靜的地方，讓好奇心帶路。透過花草、香氣與微小的發現，這座虛擬香水博物館邀請你，以自己的步調探索。',closing:'謝謝你，與我們一起漫遊。',back:'回到森林',close:'關閉創作者頁面'},language);}
 
 export function BookIcon(){return <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 5.5C9 3.7 5.2 3.4 2.5 4.3v14c3-.9 6.7-.5 9.5 1.2 2.8-1.7 6.5-2.1 9.5-1.2v-14c-2.7-.9-6.5-.6-9.5 1.2Zm0 0v14"/><path d="M5.5 8c1.2-.1 2.4.1 3.5.6M5.5 11c1.2-.1 2.4.1 3.5.6M15 8.6c1.1-.5 2.3-.7 3.5-.6"/></svg>;}
 

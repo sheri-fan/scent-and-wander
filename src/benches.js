@@ -23,3 +23,15 @@ export function benchColliders(benches){
   return {x:b.x+Math.cos(b.angle)*offset,z:b.z-Math.sin(b.angle)*offset,radius:.37};
  }));
 }
+
+export function benchSeatPosition(b){
+ return {x:b.x+Math.sin(b.angle)*.08,y:b.y+1.37,z:b.z+Math.cos(b.angle)*.08};
+}
+export function benchStandPosition(b,colliders){
+ for(const forward of [1.05,1.35,1.65])for(const side of [0,-.5,.5]){
+  const x=b.x+Math.sin(b.angle)*forward+Math.cos(b.angle)*side;
+  const z=b.z+Math.cos(b.angle)*forward-Math.sin(b.angle)*side;
+  if(x*x+z*z<93**2&&colliders.every(c=>(x-c.x)**2+(z-c.z)**2>(c.radius+.35)**2))return {x,z,y:groundHeight(x,z)+1.7};
+ }
+ return null;
+}

@@ -1,5 +1,7 @@
 import {useEffect,useRef,useState} from 'react';
 import {chineseText} from './chinese.js';
+import {canBlendFromBasket} from './basket.js';
+import {basketLabels} from './FlowerBasket.jsx';
 import {SCENT_NOTES,BLENDS_KEY,BOARD_KEY,blendPercentages,cleanLabel,loadBlends,cleanBoard,drawStrokes} from './workshop.js';
 
 function labels(language){return chineseText(language==='en'?{
@@ -10,8 +12,9 @@ function labels(language){return chineseText(language==='en'?{
  lab:'香氣實驗室',board:'小屋黑板',labTitle:'調一款屬於你的香氣',boardTitle:'留下一點你的心意',intro:'選擇三種香調，調整彼此的比例，再為你的虛擬香氣取個名字。',name:'香氣名稱',top:'開場香調',heart:'中間香調',base:'持久香調',parts:'份數',save:'收藏我的香氣',saved:'你的香氣已收藏。',collection:'你收藏的香氣',empty:'第一款香氣，等著你來調配。',load:'使用這款配方',remove:'刪除',local:'只儲存在這個瀏覽器，留給你自己。',return:'回到小屋',close:'關閉',message:'你的留言',messageHint:'一個念頭、一個願望，或留給下次造訪的自己⋯',draw:'在黑板上畫畫',chalk:'粉筆顏色',eraser:'橡皮擦',undo:'復原',clear:'清除畫作',saveBoard:'留在黑板上',boardSaved:'留言與畫作已留在黑板上。',storage:'暫時無法儲存，瀏覽器的儲存空間可能已滿。',nameRequired:'先為香氣取個名字吧。',defaultName:'我的林間香氣',virtual:'虛擬香氣創作',
  },language);}
 
-function ScentLab({language,t,onSaved}){
- const [name,setName]=useState(t.defaultName),[notes,setNotes]=useState([{id:'Bergamot',parts:3},{id:'Rose Bush',parts:4},{id:'Sandalwood',parts:3}]);
+function ScentLab({language,t,onSaved,basket}){
+ const available=SCENT_NOTES.filter(n=>basket.includes(n.id)),ready=available.length>=3,bt=basketLabels(language);
+ const [name,setName]=useState(t.defaultName),[notes,setNotes]=useState(()=>[3,4,3].map((parts,i)=>({id:available[i]?.id||'',parts})));
  const [label,setLabel]=useState(()=>cleanLabel(null)),[editingLabel,setEditingLabel]=useState(false);
  const lt=chineseText(language==='en'?{edit:'Customize label',hint:'Click the label to customize',text:'Label text',subtitle:'Small inscription',paper:'Paper colour',ink:'Text colour',font:'Lettering',serif:'Classic serif',sans:'Simple',script:'Handwritten',done:'Done',follow:'Leave empty to use your scent name'}:{edit:'設計瓶身標籤',hint:'點擊標籤開始設計',text:'標籤文字',subtitle:'小字題記',paper:'紙張顏色',ink:'文字顏色',font:'字體',serif:'典雅襯線',sans:'簡約',script:'手寫風格',done:'完成',follow:'留白以使用香氣名稱'},language);
  const updateLabel=update=>{setLabel(old=>({...old,...update}));setNotice('');};
@@ -20,26 +23,28 @@ function ScentLab({language,t,onSaved}){
  const change=(i,update)=>{setNotes(ns=>ns.map((n,j)=>j===i?{...n,...update}:n));setNotice('');};
  const save=()=>{
   if(!name.trim()){setNotice(t.nameRequired);return;}
+  if(!canBlendFromBasket(notes,basket)){setNotice(bt.progress);return;}
   const blend={name:name.trim(),label:cleanLabel(label),notes:notes.map(n=>({...n})),createdAt:new Date().toISOString()};
   const next=[blend,...saved].slice(0,12);
   try{localStorage.setItem(BLENDS_KEY,JSON.stringify(next));setSaved(next);onSaved(blend);setNotice(t.saved);}catch{setNotice(t.storage);}
  };
  const remove=index=>{const next=saved.filter((_,i)=>i!==index);try{localStorage.setItem(BLENDS_KEY,JSON.stringify(next));setSaved(next);}catch{setNotice(t.storage);}};
  return <>
-  <p className="workshop-intro">{t.intro}</p>
+  <p className="workshop-intro">{t.intro}</p><p className="basket-progress">{basket.length} · {ready?bt.ready:bt.progress}</p><p className="workshop-muted">{bt.reusable}</p>
+  {ready&&<>
   <div className="blend-layout"><div className="blend-controls">
    <label className="workshop-label" htmlFor="blend-name">{t.name}</label>
    <input id="blend-name" maxLength={60} value={name} onChange={e=>{setName(e.target.value);setNotice('');}}/>
    {notes.map((note,i)=><div className="blend-note" key={i}>
     <label htmlFor={`scent-note-${i}`}>{[t.top,t.heart,t.base][i]}<strong>{percentages[i]}%</strong></label>
     <select id={`scent-note-${i}`} value={note.id} onChange={e=>change(i,{id:e.target.value})}>
-     {SCENT_NOTES.map(n=><option key={n.id} value={n.id}>{noteName(n)}</option>)}
+     {available.map(n=><option key={n.id} value={n.id}>{noteName(n)}</option>)}
     </select>
     <label className="parts-label" htmlFor={`scent-parts-${i}`}>{t.parts}<output>{note.parts}</output></label>
     <input id={`scent-parts-${i}`} type="range" min="1" max="10" step="1" value={note.parts} onChange={e=>change(i,{parts:Number(e.target.value)})}/>
    </div>)}
   </div><div className="blend-preview" aria-label={t.virtual}>
-   <div className="scent-bottle"><div className="scent-bottle-cap"/><div className="scent-bottle-liquid" style={{background:`linear-gradient(0deg,${notes.map(n=>SCENT_NOTES.find(s=>s.id===n.id).color).join(',')})`}}/><button type="button" className="bottle-label" aria-label={lt.edit} aria-expanded={editingLabel} aria-controls="label-editor" onClick={()=>setEditingLabel(open=>!open)} style={{background:label.paper,color:label.ink,fontFamily:label.font}}><span>{label.text||name||t.defaultName}</span>{label.subtitle&&<small>{label.subtitle}</small>}</button></div>
+   <div className="scent-bottle"><div className="scent-bottle-cap"/><div className="scent-bottle-liquid" style={{background:`linear-gradient(0deg,${notes.map(n=>SCENT_NOTES.find(s=>s.id===n.id)?.color||'#c9aa7a').join(',')})`}}/><button type="button" className="bottle-label" aria-label={lt.edit} aria-expanded={editingLabel} aria-controls="label-editor" onClick={()=>setEditingLabel(open=>!open)} style={{background:label.paper,color:label.ink,fontFamily:label.font}}><span>{label.text||name||t.defaultName}</span>{label.subtitle&&<small>{label.subtitle}</small>}</button></div>
    <small>{t.virtual}</small><small>{lt.hint}</small>
   </div></div>
   {editingLabel&&<fieldset className="label-editor" id="label-editor"><legend>{lt.edit}</legend>
@@ -49,12 +54,13 @@ function ScentLab({language,t,onSaved}){
    <label htmlFor="label-font">{lt.font}</label><select id="label-font" value={label.font} onChange={e=>updateLabel({font:e.target.value})}><option value="serif">{lt.serif}</option><option value="sans-serif">{lt.sans}</option><option value="cursive">{lt.script}</option></select>
    <button type="button" onClick={()=>{setEditingLabel(false);document.querySelector('.bottle-label')?.focus();}}>{lt.done}</button>
   </fieldset>}
-  <button className="workshop-primary" onClick={save}>{t.save} <span>✧</span></button>
-  <p className="workshop-notice" role="status">{notice}</p>
+  {!canBlendFromBasket(notes,basket)&&<p className="workshop-muted">{bt.progress}</p>}
+  <button className="workshop-primary" disabled={!canBlendFromBasket(notes,basket)} onClick={save}>{t.save} <span>✧</span></button>
+  <p className="workshop-notice" role="status">{notice}</p></>}
   <h3>{t.collection}</h3>
   {!saved.length?<p className="workshop-muted">{t.empty}</p>:<ul className="saved-blends">{saved.map((blend,i)=><li key={`${blend.createdAt}-${i}`}>
    <div><strong>{blend.name}</strong><small>{blend.notes.map(n=>noteName(SCENT_NOTES.find(s=>s.id===n.id))).join(' · ')}</small></div>
-   <button onClick={()=>{setName(blend.name);setLabel(cleanLabel(blend.label));setNotes(blend.notes.map(n=>({...n})));setNotice('');}}>{t.load}</button>
+   <button disabled={!canBlendFromBasket(blend.notes,basket)} title={!canBlendFromBasket(blend.notes,basket)?bt.progress:undefined} onClick={()=>{setName(blend.name);setLabel(cleanLabel(blend.label));setNotes(blend.notes.map(n=>({...n})));setNotice('');}}>{t.load}</button>
    <button onClick={()=>remove(i)} aria-label={`${t.remove}: ${blend.name}`}>{t.remove}</button>
   </li>)}</ul>}
  </>;
@@ -91,7 +97,7 @@ function Blackboard({t,initial,onSaved}){
  </>;
 }
 
-export default function WorkshopPanel({activity,language,board,onBoardSaved,onBlendSaved,onClose}){
+export default function WorkshopPanel({activity,language,board,onBoardSaved,onBlendSaved,onClose,basket}){
  const t=labels(language),ref=useRef(null);
  useEffect(()=>{ref.current?.querySelector('input,textarea,button')?.focus();},[activity]);
  const keyDown=e=>{
@@ -105,7 +111,7 @@ export default function WorkshopPanel({activity,language,board,onBoardSaved,onBl
   <button className="workshop-close" aria-label={t.close} onClick={onClose}>×</button>
   <div className="workshop-eyebrow">{activity==='lab'?t.lab:t.board}</div>
   <h2 id="workshop-title">{activity==='lab'?t.labTitle:t.boardTitle}</h2>
-  {activity==='lab'?<ScentLab language={language} t={t} onSaved={onBlendSaved}/>:<Blackboard t={t} initial={board} onSaved={onBoardSaved}/>}
+  {activity==='lab'?<ScentLab language={language} t={t} onSaved={onBlendSaved} basket={basket}/>:<Blackboard t={t} initial={board} onSaved={onBoardSaved}/>}
   <div className="workshop-footer"><small>{t.local}</small><button id="enter-forest">{t.return} <span>↗</span></button></div>
  </section>;
 }

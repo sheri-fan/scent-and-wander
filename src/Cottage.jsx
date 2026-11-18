@@ -15,8 +15,8 @@ function timberMap(){
  for(let y=0;y<256;y+=32){ctx.fillStyle='#402e2555';ctx.fillRect(0,y,256,2);}
  const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t;
 }
-function Box({size,at,material,rotation}){
- return <mesh position={at} rotation={rotation} material={material} castShadow receiveShadow><boxGeometry args={size}/></mesh>;
+function Box({size,at,material,rotation,name}){
+ return <mesh name={name} position={at} rotation={rotation} material={material} castShadow receiveShadow><boxGeometry args={size}/></mesh>;
 }
 export default function Cottage({cottage:c,doorOpen=false,board,lastBlend}){
  const doorLeaf=useRef();
@@ -40,8 +40,9 @@ export default function Cottage({cottage:c,doorOpen=false,board,lastBlend}){
   <Box size={[.74,.06,.15]} at={[0,.45,.02]} material={trim}/>
  </group>;
  return <group name="Warm woodland cottage" position={[c.x,c.y,c.z]} rotation={[0,c.angle,0]}>
-  <Box size={[3.38,.24,2.7]} at={[0,.12,0]} material={trim}/>
-  <Box size={[3.1,.04,2.4]} at={[0,.22,0]} material={wood}/>
+  {/* Keep the foundation below the floor: coplanar tops flicker when moving. */}
+  <Box name="Cottage foundation" size={[3.38,.2,2.7]} at={[0,.1,0]} material={trim}/>
+  <Box name="Cottage floor" size={[3.1,.04,2.4]} at={[0,.22,0]} material={wood}/>
   <Box size={[3.2,2.05,.14]} at={[0,1.23,-1.25]} material={wood}/>
   {[-1,1].map(side=><group key={`wall-${side}`}>
    <Box size={[.14,2.05,2.5]} at={[side*1.6,1.23,0]} material={wood}/>
@@ -67,7 +68,8 @@ export default function Cottage({cottage:c,doorOpen=false,board,lastBlend}){
   {windowAt(-1.18,1.42,1.29)}{windowAt(1.18,1.42,1.29)}{windowAt(1.63,1.42,-.15,true)}
   {windowAt(-1.18,1.42,1.16,Math.PI)}{windowAt(1.18,1.42,1.16,Math.PI)}{windowAt(1.5,1.42,-.15,-Math.PI/2)}
   <CottageInterior board={board} lastBlend={lastBlend}/>
-  <Box size={[1.28,.17,.65]} at={[0,.16,1.5]} material={wood}/>
+  {/* The porch meets the floor edge without overlapping its top surface. */}
+  <Box name="Cottage porch" size={[1.28,.17,.6]} at={[0,.155,1.5]} material={wood}/>
   <Box size={[1.45,.09,.33]} at={[0,.045,1.89]} material={trim}/>
   <pointLight position={[0,1.7,1.85]} color="#ffb45d" intensity={3} distance={6} decay={2}/>
   {/* Small wall lantern beside the door. */}
